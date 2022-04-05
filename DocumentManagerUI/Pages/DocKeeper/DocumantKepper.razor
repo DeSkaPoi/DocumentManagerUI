@@ -1,0 +1,23 @@
+﻿
+<TabControl>
+    <TabPage Text="Documents">
+        <Documents IdDocument="@IdDocument" BaseUri="@BaseUri" />
+    </TabPage>
+    <TabPage Text="Pictures">
+
+    </TabPage>
+    <TabPage Text="Videos">
+
+    </TabPage>
+    <TabPage Text="Files">
+
+    </TabPage>
+</TabControl>
+
+@code {
+
+    [Parameter]
+    public string IdDocument { get; set; }
+    [Parameter]
+    public string BaseUri { get; set; }
+}

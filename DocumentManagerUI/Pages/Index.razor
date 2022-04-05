@@ -1,0 +1,15 @@
+﻿@using ModelDomain
+@using System.Net.Http
+@inject HttpClient Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@page "/"
+
+
+<DocumantKepper IdDocument="@IdDocument" BaseUri="@BaseUri" />
+
+@code{
+
+    public string IdDocument { get; set; } = "a5379e82-b4d5-4922-1e9b-08da0dd3bc27";
+    public string BaseUri { get; set; } = "https://localhost:5001/api/Documents/";
+}
