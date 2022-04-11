@@ -1,0 +1,39 @@
+﻿<h3>ErrorModal</h3>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Employee edit</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            @ErrorMesage
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter]
+    public string ErrorMesage { get; set; }
+
+    [Parameter]
+    public Modal modalRef { get; set; }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+
+    public Task ShowModal()
+    {
+        return modalRef.Show();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+}

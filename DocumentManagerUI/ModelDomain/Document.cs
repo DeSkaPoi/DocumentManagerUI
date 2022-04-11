@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+
 
 namespace ModelDomain
 {
@@ -11,8 +12,9 @@ namespace ModelDomain
     {
         public Guid Id { get; set; }
         [Required]
-        [StringLength(10, ErrorMessage = "Name is too long.")]
+        [StringLength(20, ErrorMessage = "Name is too long (>25).")]
         public string Title { get; set; }
+        [StringLength(50, ErrorMessage = "Name is too long (>50).")]
         public string Content { get; set; } 
         public string Description { get; set; }
         public DateTime CreationTime { get; set; }
@@ -22,13 +24,20 @@ namespace ModelDomain
         public List<PictureLink> Pictures { get; set; } 
         public List<VideoLink> Videos { get; set; } 
         
-        /*public Document()
+        public Document(Guid id, string title, string content, string description, DateTime creationTime, DateTime lastUpdate,
+            List<FileLink> files, List<PictureLink> pictures, List<VideoLink> videos)
         {
-            Files = new List<FileLink>();
-            Pictures = new List<PictureLink>();
-            Videos = new List<VideoLink>();
+            Id = id;
+            Title = title;
+            Content = content;
+            Description = description;
+            CreationTime = creationTime;
+            LastUpdate = lastUpdate;
+            Files = files;
+            Pictures = pictures;
+            Videos = videos;
         }
-        */
+        
 
     }
 }
