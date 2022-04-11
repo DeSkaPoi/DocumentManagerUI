@@ -23,21 +23,5 @@ namespace ModelDomain
         public List<FileLink> Files { get; set; } 
         public List<PictureLink> Pictures { get; set; } 
         public List<VideoLink> Videos { get; set; } 
-        
-        public Document(Guid id, string title, string content, string description, DateTime creationTime, DateTime lastUpdate,
-            List<FileLink> files, List<PictureLink> pictures, List<VideoLink> videos)
-        {
-            Id = id;
-            Title = title;
-            Content = content;
-            Description = description;
-            CreationTime = creationTime;
-            LastUpdate = lastUpdate;
-            Files = files;
-            Pictures = pictures;
-            Videos = videos;
-        }
-        
-
     }
 }

@@ -3,6 +3,8 @@
 @inject HttpClient Http
 @using System.Net.Http.Json
 @using System.Threading.Tasks
+@using System.IO;
+@using System.Text.Json;
 
 <EditForm Model="@document" OnValidSubmit="@HandleValidSubmit" class="row g-3 px-2 py-2">
     <DataAnnotationsValidator />
@@ -39,6 +41,21 @@
     </div>
 </EditForm>
 
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Employee edit</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            @ErrorMessage
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
 @code
 {
     [Parameter]
@@ -46,24 +63,73 @@
     [Parameter]
     public string BaseURI { get; set; }
 
-    private Document document { get; set; } = new();
+
+    public string ErrorMessage { get; set; }
+    public Modal modalRef { get; set; }
+    private Document document = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await GetDocumentAsync();
+
+
+    }
+
+    private async Task GetDocumentAsync()
     {
         string uri = string.Concat(BaseURI, IdDocument);
         try
         {
-            document = await Http.GetFromJsonAsync<Document>(uri);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine("404 - no connection to the server");
-        }
+            var response = await Http.GetAsync(uri);
+            var payload = await response.GetPayload();
+            if (response.IsSuccessStatusCode)
+            {
+                document = JsonSerializer.Deserialize<Document>(payload);
+            }
+            else
+            {
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(payload);
+                throw new Exception(errorResponse.ErrorMessage);
+            }
 
+        }
+        catch (Exception ex)
+        {
+            await ShowModal(ex.Message);
+        }
     }
 
-    private void HandleValidSubmit()
+    private Task HideModal()
     {
-        // Process the valid form
+        return modalRef.Hide();
+    }
+
+    private Task ShowModal(string message)
+    {
+        ErrorMessage = message;
+        return modalRef.Show();
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        string uri = string.Concat(BaseURI, IdDocument);
+        try
+        {
+            document.LastUpdate = DateTime.Now;
+            var response = await Http.PutAsJsonAsync(uri, document);
+            if (response.IsSuccessStatusCode)
+            {
+                await GetDocumentAsync();
+            }
+            else
+            {
+                throw new Exception("500 - Internal Server Error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowModal(ex.Message);
+        }
     }
 }
