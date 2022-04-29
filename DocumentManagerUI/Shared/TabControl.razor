@@ -1,7 +1,5 @@
 ﻿<div class="main">
-    <header class="header">
-    </header>
-    <aside class="conteinerMenu">
+   <aside class="conteinerMenu">
         <div class="brandTab">
             <a class="barLink">
                 <img style="width:32px; height: 32px" src="Icons\blazorise-small.png">
@@ -18,13 +16,15 @@
         }
     </aside>
     <main class="conteinerPage">
+        <header class="header">
+             
+        </header>
         <div class="childPage">
             <CascadingValue Value="this">
                 @ChildContent
             </CascadingValue>
         </div>
     </main>
-
 </div>
 
     @code {

@@ -1,15 +1,16 @@
 .main {
-    height: 500px;
-    width: 1000px;
-    margin: 20%;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    height: 100%;
+    width: 100%;
+    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
     border-radius: 10px;
+    display: flex;
+   /* align-items:;*/
 }
 
 .header {
-    display: flow-root;
-    float: right;
-    width: 770px;
+    display: inline-block;
+    float: left;
+    width: 100%;
     height: 60px;
     background: rgba(0, 0, 0, 0.035);
 }
@@ -23,26 +24,22 @@
 
 .conteinerMenu {
     display: inline-block;
-    flex-direction: column;
-    position: sticky;
+    */ flex-direction: column;
     min-width: 230px;
     width: var(--b-vertical-bar-width, 230px);
     box-shadow: 2px 0 6px rgb(0 21 41 / 15%);
-    height: 100%;
     user-select: none;
-    float: left;
     text-align: center;
+    align-self: stretch;
 }
 
 .childPage {
     float: left;
     display: inline-block;
-    margin-left: 20px;
-    margin-right: 20px;
-    width: 730px;
+    width: 100%;
     overflow-y: auto;
-    overflow-x: clip;
-    height: 425px;
+    /*height: 100%;*/
+    max-height: 500px;
 }
 
 .directory {
