@@ -1,6 +1,5 @@
-﻿.inForm {
-    display: flex;
-    flex-wrap: wrap;
+﻿.Foorm {
+    display: inline-block;
 }
 .line {
     color: #495057;

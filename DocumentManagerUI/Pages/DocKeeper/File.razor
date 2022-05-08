@@ -1,0 +1,67 @@
+﻿@using System.IO
+@using System.Net.Http.Headers
+@using System.Reflection.Metadata
+@using System.Text.Json
+@inject HttpClient Http
+
+
+<FileEdit Changed="@OnChanged" Written="@OnWritten" Progressed="@OnProgressed" />
+
+
+<img src="@imageURL">
+
+@code {
+    string fileContent;
+    string imageURL = "";
+    string payload;
+
+    async Task OnChanged(FileChangedEventArgs e)
+    {
+        try
+        {
+            foreach (var file in e.Files)
+            {
+                var stream = new MemoryStream();
+                await file.WriteToStreamAsync(stream);
+                byte[] byteArray = stream.ToArray();
+                var response = new ResponseFile(byteArray.ToString(), byteArray);
+                var status = await Http.PostAsJsonAsync("https://localhost:44339/api/FileGridFs", response);
+                payload = await status.GetPayload();
+            }
+        }
+        catch (Exception exc)
+        {
+            Console.WriteLine(exc.Message);
+        }
+        finally
+        {
+            this.StateHasChanged();
+        }
+    }
+
+    void OnWritten(FileWrittenEventArgs e)
+    {
+        Console.WriteLine($"File: {e.File.Name} Position: {e.Position} Data: {Convert.ToBase64String(e.Data)}");
+    }
+
+    void OnProgressed(FileProgressedEventArgs e)
+    {
+        Console.WriteLine($"File: {e.File.Name} Progress: {e.Percentage}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await PopulateImageFromStream();
+    }
+
+
+    private async Task<string> PopulateImageFromStream()
+    {
+        var response = await Http.GetAsync("https://localhost:44339/api/FileGridFs/" + this.payload);
+        var payload = await response.GetPayload();
+        ResponseFile file = JsonSerializer.Deserialize<ResponseFile>(payload);
+        var b64String = Convert.ToBase64String(file.Content);
+        imageURL = "data:image/png;base64," + b64String;
+        return imageURL;
+    }
+}

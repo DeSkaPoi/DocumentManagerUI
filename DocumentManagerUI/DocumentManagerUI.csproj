@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <None Include="Pages\Index.razor" />
-    <None Include="Shared\MainLayout.razor" />
   </ItemGroup>
 
   <ItemGroup>
