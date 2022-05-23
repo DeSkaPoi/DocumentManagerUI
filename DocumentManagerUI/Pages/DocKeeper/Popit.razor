@@ -1,0 +1,67 @@
+﻿@using System.IO
+@using System.Net.Http.Headers
+@using System.Reflection.Metadata
+@using System.Text.Json
+@using Microsoft.Extensions.Logging
+@inject HttpClient Http
+
+
+<InputFile id="file" OnChange="@OnInputFileObjectChange" />
+
+@foreach (var picture in listPicture)
+{
+    <img src="@picture">
+}
+
+
+@code {
+    string imageURL = "";
+    private int maxAllowedFiles = 3;
+
+    List<Guid> listId = new();
+    List<string> listPicture = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listId.Add(Guid.Parse("184029ec-321a-47f9-4fd0-08da3c452a6a"));
+        listId.Add(Guid.Parse("76d9a7ca-bf46-49c5-a4a4-08da3d0693f1"));
+        
+        foreach (var id in listId)
+        {
+            listPicture.Add(await GetFileObject(id));
+        }
+    }
+
+    private async Task OnInputFileObjectChange(InputFileChangeEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+        
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            var imageFile = await file.RequestImageFileAsync("image/jpeg", maxWith: 1280, maxHeight: 720);
+            using var fileContent = imageFile.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+            var content = new MultipartFormDataContent
+            {
+                {
+                    new ByteArrayContent(ms.ToArray()),
+                    "\"file\"",
+                    file.Name
+                }
+            };
+            var guid = Guid.Parse("76d9a7ca-bf46-49c5-a4a4-08da3d0693f1");
+            
+            var status = await Http.PostAsync($"https://localhost:44339/api/FileObject/{guid}", content);
+        }
+    }
+
+    private async Task<string> GetFileObject(Guid Id)
+    {
+        var fileInfo = await Http.GetFromJsonAsync<FileInfoResponse>($"https://localhost:44339/api/FileManagers/{Id}");
+        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FileObject/scale/{Id}");
+        fileInfo.FileObj = fileObject;
+        var imageURL = $"data:image/jpg;base64,{Convert.ToBase64String(fileInfo.FileObj.File)}";
+        return imageURL;
+    }
+}
