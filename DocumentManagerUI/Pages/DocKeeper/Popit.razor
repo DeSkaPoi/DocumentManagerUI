@@ -8,11 +8,10 @@
 
 <InputFile id="file" OnChange="@OnInputFileObjectChange" />
 
-@foreach (var picture in listPicture)
+@foreach (var pict in listPicture)
 {
-    <img src="@picture">
+    <img src="@pict">
 }
-
 
 @code {
     string imageURL = "";
@@ -25,7 +24,7 @@
     {
         listId.Add(Guid.Parse("184029ec-321a-47f9-4fd0-08da3c452a6a"));
         listId.Add(Guid.Parse("76d9a7ca-bf46-49c5-a4a4-08da3d0693f1"));
-        
+
         foreach (var id in listId)
         {
             listPicture.Add(await GetFileObject(id));
