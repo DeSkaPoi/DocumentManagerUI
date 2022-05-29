@@ -8,9 +8,11 @@
 
 <InputFile id="file" OnChange="@OnInputFileObjectChange" />
 
+<button @onclick="Post" class="btn btn-primary">Сохранить</button>
+
 @foreach (var pict in listPicture)
 {
-    <img src="@pict">
+    <a href="@pict.File"><br/>@(pict.Name)</a>
 }
 
 @code {
@@ -18,16 +20,18 @@
     private int maxAllowedFiles = 3;
 
     List<Guid> listId = new();
-    List<string> listPicture = new();
+    List<Popitis> listPicture = new();
+
+    FileInfoResponse fileInfoRess = new FileInfoResponse();
+    MultipartFormDataContent content = new MultipartFormDataContent();
 
     protected override async Task OnInitializedAsync()
     {
-        listId.Add(Guid.Parse("184029ec-321a-47f9-4fd0-08da3c452a6a"));
-        listId.Add(Guid.Parse("76d9a7ca-bf46-49c5-a4a4-08da3d0693f1"));
+        var res = await Http.GetFromJsonAsync<List<FileInfoResponse>>("https://localhost:44339/api/FileManagers");
 
-        foreach (var id in listId)
+        foreach (var fileInfo in res)
         {
-            listPicture.Add(await GetFileObject(id));
+            listPicture.Add(await GetFileObject(fileInfo.Id));
         }
     }
 
@@ -35,32 +39,46 @@
     {
         long maxFileSize = 1024 * 1024 * 100;
         
-        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        foreach (var file in e.GetMultipleFiles(1))
         {
-            var imageFile = await file.RequestImageFileAsync("image/jpeg", maxWith: 1280, maxHeight: 720);
-            using var fileContent = imageFile.OpenReadStream(maxFileSize);
+            using var fileContent = file.OpenReadStream(maxFileSize);
             using var ms = new MemoryStream();
             await fileContent.CopyToAsync(ms);
-            var content = new MultipartFormDataContent
-            {
-                {
-                    new ByteArrayContent(ms.ToArray()),
-                    "\"file\"",
-                    file.Name
-                }
-            };
-            var guid = Guid.Parse("76d9a7ca-bf46-49c5-a4a4-08da3d0693f1");
             
-            var status = await Http.PostAsync($"https://localhost:44339/api/FileObject/{guid}", content);
+            var byteArray = new ByteArrayContent(ms.ToArray());
+            byteArray.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            content = new MultipartFormDataContent();
+            content.Add(byteArray, "\"file\"", file.Name);
+            Console.WriteLine(content);
         }
     }
 
-    private async Task<string> GetFileObject(Guid Id)
+    private async Task OnInputFileInfoChange()
+    {
+        Random rnd = new Random();
+        fileInfoRess.Title = $"{rnd.Next().ToString()}";
+
+    }
+
+    private async Task Post()
+    {
+        await OnInputFileInfoChange();
+        Console.WriteLine(fileInfoRess + " " + fileInfoRess.Title);
+        var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileManagers/", fileInfoRess);
+        var filInfoApiStream = statusInfo.Content.ReadAsStream();
+        var fileInfoResp = await JsonSerializer.DeserializeAsync<Guid>(filInfoApiStream); 
+        Console.WriteLine(fileInfoResp);
+
+        var status = await Http.PostAsync($"https://localhost:44339/api/FileObject/{fileInfoResp}", content);
+    }
+
+    private async Task<Popitis> GetFileObject(Guid Id)
     {
         var fileInfo = await Http.GetFromJsonAsync<FileInfoResponse>($"https://localhost:44339/api/FileManagers/{Id}");
-        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FileObject/scale/{Id}");
+        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FileObject/{Id}");
         fileInfo.FileObj = fileObject;
-        var imageURL = $"data:image/jpg;base64,{Convert.ToBase64String(fileInfo.FileObj.File)}";
-        return imageURL;
+        var imageURL = $"data:{fileInfo.FileObj.FileType};base64,{Convert.ToBase64String(fileInfo.FileObj.File)}";
+        var file = new Popitis(imageURL, fileInfo.FileObj.Name);
+        return file;
     }
 }
