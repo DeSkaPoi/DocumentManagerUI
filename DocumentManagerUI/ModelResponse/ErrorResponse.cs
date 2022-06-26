@@ -1,4 +1,4 @@
-﻿namespace ModelDomain
+﻿namespace DocumentManagerUI.ModelResponse
 {
     public class ErrorResponse
     {

@@ -1,0 +1,86 @@
+﻿@using System.IO
+@using System.Net.Http.Headers
+@using System.Reflection.Metadata
+@using System.Text.Json
+@using DocumentManagerUI.ModelResponse
+@using Microsoft.Extensions.Logging
+@inject HttpClient Http
+
+
+<InputFile id="file" OnChange="@OnInputFileObjectChange" />
+
+<button @onclick="PostFileObject" class="btn btn-primary">Сохранить</button>
+
+@foreach (var file in fileList)
+{
+    <p><br>@file.Title    @file.Type     @file.Id</p>
+}
+
+
+@code {
+    string fileUrl = "";
+    private int maxAllowedFiles = 3;
+
+    List<FilesInfoResponse> fileList = new();
+    FileInfoResponse fileChange = new FileInfoResponse();
+
+    FileInfoResponse fileInfoRes = new();
+    MultipartFormDataContent content = new MultipartFormDataContent();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (fileList == null)
+        {
+            fileList = new();
+        }
+        fileList = await Http.GetFromJsonAsync<List<FilesInfoResponse>>("https://localhost:44339/api/FileManagers");
+    }
+
+    private async Task OnInputFileObjectChange(InputFileChangeEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+        
+        foreach (var file in e.GetMultipleFiles(1))
+        {
+            using var fileContent = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+            if (fileInfoRes == null)
+            {
+                throw new Exception("Mutable object not found");
+            }
+            fileInfoRes.FileObject = new FileObjectResponse(Guid.Empty, file.Name, ms.ToArray(), file.ContentType);
+        }
+    }
+
+    private async Task OnInputFileInfoChange()
+    {
+        Random rnd = new Random();
+        fileInfoRes.Title = $"{rnd.Next().ToString()}";
+    }
+
+    private async Task PostFileObject()
+    {
+        await OnInputFileInfoChange();
+        Console.WriteLine(fileInfoRes + " " + fileInfoRes.Title);
+        var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileManagers/", fileInfoRes);
+       
+        Console.WriteLine(statusInfo);
+    }
+
+    private async Task<FileListResponse> GetFileObject(Guid Id)
+    {
+        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FileObject/{Id}");
+        fileInfoRes.FileObject = fileObject;
+        var fileUrl = $"data:{fileInfoRes.FileObject.FileTypeMime};base64,{Convert.ToBase64String(fileInfoRes.FileObject.File)}";
+        var file = new FileListResponse(fileUrl, fileInfoRes.FileObject.Name);
+        return file;
+    }
+
+    private async Task<FileListResponse> GetFileList(Guid Id)
+    {
+        var fileInfo = await Http.GetFromJsonAsync<FileInfoResponse>($"https://localhost:44339/api/FileManagers/{Id}");
+        return null;
+    }
+}

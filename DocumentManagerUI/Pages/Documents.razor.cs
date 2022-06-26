@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Text.Json;
 
-namespace DocumentManagerUI.Pages.DocKeeper
+namespace DocumentManagerUI.Pages
 {
     public partial class Documents
     {

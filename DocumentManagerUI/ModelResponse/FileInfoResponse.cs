@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ModelDomain
+namespace DocumentManagerUI.ModelResponse
 {
     public class FileInfoResponse
     {
@@ -14,7 +14,7 @@ namespace ModelDomain
         public DateTime CreationTime { get; set; }
         public DateTime LastUpDate { get; set; }
         public string Size { get; set; }
-        public FileObjectResponse FileObj { get; set; }
+        public FileObjectResponse FileObject { get; set; }
 
         //public FileInfoResponse() { }
 

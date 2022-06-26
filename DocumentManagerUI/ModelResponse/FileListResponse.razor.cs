@@ -1,11 +1,11 @@
-﻿namespace DocumentManagerUI.Pages.DocKeeper
+﻿namespace DocumentManagerUI.Pages
 {
-    public class Popitis
+    public partial class FileListResponse
     {
         public string File { get; }
         public string Name { get; }
 
-        public Popitis(string file, string name)
+        public FileListResponse(string file, string name)
         {
             File = file;
             Name = name;

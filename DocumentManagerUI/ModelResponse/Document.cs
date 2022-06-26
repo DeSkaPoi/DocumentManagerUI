@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using ModelDomain;
 
-
-namespace ModelDomain
+namespace DocumentManagerUI.ModelResponse
 {
     public class Document
     {
@@ -20,7 +17,7 @@ namespace ModelDomain
         public DateTime CreationTime { get; set; }
         public DateTime LastUpdate { get; set; }
 
-        public List<FileLink> Files { get; set; } 
+        public List<FileLinkResponse> Files { get; set; } 
         public List<PictureLink> Pictures { get; set; } 
         public List<VideoLink> Videos { get; set; } 
     }
