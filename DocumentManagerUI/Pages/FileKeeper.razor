@@ -77,10 +77,4 @@
         var file = new FileListResponse(fileUrl, fileInfoRes.FileObject.Name);
         return file;
     }
-
-    private async Task<FileListResponse> GetFileList(Guid Id)
-    {
-        var fileInfo = await Http.GetFromJsonAsync<FileInfoResponse>($"https://localhost:44339/api/FileManagers/{Id}");
-        return null;
-    }
 }
