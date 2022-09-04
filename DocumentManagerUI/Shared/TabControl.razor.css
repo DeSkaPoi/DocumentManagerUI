@@ -12,7 +12,14 @@
     float: left;
     width: 100%;
     height: 60px;
-    background: rgba(0, 0, 0, 0.035);
+    background: rgba(0, 0, 0, 0.055);
+}
+
+.m-11 {
+    margin: -1px;
+    margin-left: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    width: 750px;
 }
 
 .conteinerPage {
@@ -40,6 +47,7 @@
     overflow-y: auto;
     /*height: 100%;*/
     max-height: 500px;
+    padding-top: 5px;
 }
 
 .directory {
@@ -75,7 +83,7 @@
 }
 
 .brandTab {
-    background: rgba(0, 0, 0, 0.035);
+    background: rgba(0, 0, 0, 0.055);
     width: 100%;
     display: flex;
     height: 0px;

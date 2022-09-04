@@ -1,0 +1,186 @@
+﻿@using System.IO
+@using System.Text.Json
+@using System.Net.Http
+@inject HttpClient Http
+@using System.Net.Http.Json
+@using DocumentManagerUI.ModelResponse
+@using Microsoft.JSInterop
+
+
+<div class="col-12 dp-ib">
+    <div class="offset-md-10 py-2">
+        <button @onclick="ShowModal" type="button" class="btn btn-outline-dark">
+            <div class="plus-square-fill.svg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-plus-lg" viewBox="0 1 16 16">
+                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                </svg>
+                Upload
+            </div>
+        </button>
+    </div>
+</div>
+
+
+
+
+
+<div id="main-content" class="file_manager">
+    <div class="container">
+        <div class="row clearfix">
+
+            @foreach (var file in fileList)
+            {
+
+                <div class="col-2-5">
+                        <div class="file">
+                        <a @onclick="ShowModal" type="button" class="btn btn-r btn-light">
+                                <div class="hover">
+                                <button type="button" class="btn btn-sm btn-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-down-square-fill" viewBox="0 0 16 16">
+                                        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V4.5a.5.5 0 0 1 1 0z"/>
+                                    </svg>
+                                    </button>
+                                </div>
+                                <div >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                                    <path stroke="white" stroke-width="0.4px" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0  0 1-1V4.5h-2z" />
+                                    </svg>
+                                </div>
+                                <div class="file-name">
+                                <p class="m-b-5 text-muted name-file">@file.Title</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+            }
+
+
+        </div>
+
+    </div>
+</div>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Загрузить файл</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <FileEdit Changed="@OnChanged" />
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Success" Clicked="@UploadFile">Загрузить</Button>
+            <Button Color="Color.Danger" Clicked="@HideModal">Закрыть</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    string fileUrl = "";
+    private int maxAllowedFiles = 3;
+
+    List<FileInfoResponse> fileList = new();
+    List<FileListResponse> payloadFileList = new List<FileListResponse>();
+    
+    FileInfoResponse file = new FileInfoResponse();
+    FileObjectResponse payloadFile = new();
+    
+    MultipartFormDataContent content = new MultipartFormDataContent();
+    public Modal modalRef { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (fileList == null)
+        {
+            fileList = new();
+        }
+        fileList = await Http.GetFromJsonAsync<List<FileInfoResponse>>("https://localhost:44339/api/FileDescription");
+    //var payloadFile = await GetFileObject(fileList[0].Id);
+    //fileUrl = payloadFile.File;
+    //int o = 0;
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+
+    private Task UploadFile()
+    {
+        return modalRef.Hide();
+    }
+
+    private Task ShowModal()
+    {
+        return modalRef.Show();
+    }
+
+    protected async Task OnChanged(FileChangedEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+
+        foreach (var file in e.Files)
+        {
+            using var fileContent = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+            if (payloadFile == null)
+            {
+                throw new Exception("Mutable object not found");
+            }
+            payloadFile = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
+        }
+    }
+
+
+
+
+   
+   
+
+    private async Task OnInputFileObjectChange(InputFileChangeEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+
+        foreach (var file in e.GetMultipleFiles(1))
+        {
+            using var fileContent = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+            if (payloadFile == null)
+            {
+                throw new Exception("Mutable object not found");
+            }
+            payloadFile = new FileObjectResponse(file.Name, ms.ToArray(), file.ContentType);
+        }
+    }
+
+    private async Task PostFileObject()
+    {
+        file.Title = "sdsdsd";
+        var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", file);
+
+        var idfile = await response.Content.ReadAsStringAsync();
+        idfile = idfile.Trim('"');
+        //var newFile = JsonSerializer.
+
+        var req = $"https://localhost:44339/api/FilePayload/file/{idfile}";
+        var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", payloadFile);
+
+        Console.WriteLine(statusInfo);
+    }
+
+    private async Task<FileListResponse> GetFileObject(Guid Id)
+    {
+        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
+        payloadFile = fileObject;
+        var fileUrl = $"data:{payloadFile.FileTypeMime};base64,{Convert.ToBase64String(payloadFile.File)}";
+        var file = new FileListResponse(fileUrl, payloadFile.Name);
+        payloadFileList.Add(file);
+        return file;
+    }
+}

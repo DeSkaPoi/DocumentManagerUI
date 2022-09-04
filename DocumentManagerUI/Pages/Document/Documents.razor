@@ -10,29 +10,29 @@
     <DataAnnotationsValidator />
     <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
     <div class="col-10 Foorm">
-        <label for="inputAddress" class="form-label">Title</label>
+        <label class="form-label">Title</label>
         <input @bind="document.Title" type="text" class="form-control" id="inputAddress" placeholder="Название Документа" />
     </div>
 
     <div class="col-10 py-2 Foorm">
-        <label for="inputAddress2" class="form-label">Content</label>
+        <label class="form-label">Content</label>
         <input @bind="document.Content" type="text" class="form-control" id="inputAddress2" placeholder="Краткое описание" />
     </div>
 
     <div class="col-10 py-2 px-0 py-0 Foorm">
-        <label for="inputAddress3" class="form-label col-12">Description</label>
+        <label class="form-label col-12">Description</label>
         <div class="col-12 input-group">
             <textarea @bind="document.Description" type="text" class="form-control" aria-label="Подробное описание" placeholder="Подробное описание"></textarea>
         </div>
     </div>
      
     <div class="col-md-5 py-2 Foorm">
-        <label for="inputCity" class="form-label">CreationTime</label>
+        <label class="form-label">CreationTime</label>
         <input @bind="document.CreationTime" type="datetime" disabled="disabled" class="form-control" id="inputCity" />
     </div>
 
     <div class="col-md-5 py-2 Foorm">
-        <label for="inputZip" class="form-label">LastUpdate</label>
+        <label class="form-label">LastUpdate</label>
         <input @bind="document.LastUpdate" type="datetime" disabled="disabled" class="form-control" id="inputZip" />
     </div>
 
