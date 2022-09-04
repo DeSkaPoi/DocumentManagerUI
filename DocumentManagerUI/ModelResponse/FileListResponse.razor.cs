@@ -5,6 +5,8 @@
         public string File { get; }
         public string Name { get; }
 
+        public FileListResponse(){}
+
         public FileListResponse(string file, string name)
         {
             File = file;

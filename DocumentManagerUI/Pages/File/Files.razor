@@ -28,35 +28,32 @@
     <div class="container">
         <div class="row clearfix">
 
-            @foreach (var file in fileList)
+            @foreach(var file in fileList)
             {
-
+                
                 <div class="col-2-5">
-                        <div class="file">
+                    <div class="file">
                         <a @onclick="ShowModal" type="button" class="btn btn-r btn-light">
-                                <div class="hover">
-                                <button type="button" class="btn btn-sm btn-icon">
+                            <div class="hover">
+                                <a @onclick:stopPropagation="true" @onclick="@(e => {GetFileObject(file.Id); })" download="@payloadFileList.Name" href="@payloadFileList.File" type="button" class="btn btn-sm btn-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-down-square-fill" viewBox="0 0 16 16">
                                         <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V4.5a.5.5 0 0 1 1 0z"/>
                                     </svg>
-                                    </button>
-                                </div>
-                                <div >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
-                                    <path stroke="white" stroke-width="0.4px" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0  0 1-1V4.5h-2z" />
-                                    </svg>
-                                </div>
-                                <div class="file-name">
+                                </a>
+                            </div>
+                            <div >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                                    <path stroke="white" stroke-width="0.4px" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0  0 1-1V4.5h-2z"/>
+                                </svg>
+                            </div>
+                            <div class="file-name">
                                 <p class="m-b-5 text-muted name-file">@file.Title</p>
-                                </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
+                </div>
             }
-
-
         </div>
-
     </div>
 </div>
 
@@ -81,7 +78,8 @@
     private int maxAllowedFiles = 3;
 
     List<FileInfoResponse> fileList = new();
-    List<FileListResponse> payloadFileList = new List<FileListResponse>();
+    FileListResponse payloadFileList = new FileListResponse();
+    Payload p = new Payload();
     
     FileInfoResponse file = new FileInfoResponse();
     FileObjectResponse payloadFile = new();
@@ -89,6 +87,17 @@
     MultipartFormDataContent content = new MultipartFormDataContent();
     public Modal modalRef { get; set; }
 
+    
+    public class Payload
+    {
+        public event EventHandler<MouseEventArgs> ThresholdReached;
+
+        protected virtual void OnThresholdReached(MouseEventArgs e)
+        {
+            EventHandler<MouseEventArgs> handler = ThresholdReached;
+            handler?.Invoke(this, e);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,9 +106,8 @@
             fileList = new();
         }
         fileList = await Http.GetFromJsonAsync<List<FileInfoResponse>>("https://localhost:44339/api/FileDescription");
-    //var payloadFile = await GetFileObject(fileList[0].Id);
+    //payloadFileList = await GetFileObject(fileList[0].Id);
     //fileUrl = payloadFile.File;
-    //int o = 0;
     }
 
     private Task HideModal()
@@ -174,13 +182,16 @@
         Console.WriteLine(statusInfo);
     }
 
-    private async Task<FileListResponse> GetFileObject(Guid Id)
+
+    private async Task GetFileObject(Guid Id)
     {
         var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
-        payloadFile = fileObject;
-        var fileUrl = $"data:{payloadFile.FileTypeMime};base64,{Convert.ToBase64String(payloadFile.File)}";
-        var file = new FileListResponse(fileUrl, payloadFile.Name);
-        payloadFileList.Add(file);
-        return file;
+        var fileUrl = $"data:{fileObject.FileTypeMime};base64,{Convert.ToBase64String(fileObject.File)}";
+        payloadFileList = new FileListResponse(fileUrl, fileObject.Name);
+        StateHasChanged();
     }
+
+
+
 }
+
