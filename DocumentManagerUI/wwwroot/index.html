@@ -22,6 +22,22 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     </head>
 
+    <script>
+        var cheDelat = new Boolean(false);
+        function rebutton() {
+            if (cheDelat) {
+                document.getElementById('bu1').innerHTML = '<div id="Bu1" class="col-md-12 py-2 Foorm m-b m-t-10"><FileEdit Changed="@OnChanged" /></div>';
+                cheDelat = false;
+            }
+            else {
+                document.getElementById('bu1').innerHTML = ' <div id="Bu1" class="col-md-12 py-2 Foorm m-b m-t-10"><FileEdit Changed="@OnChanged" /><div class="m-t-10"><button type="submit" class="btn btn-outline-danger">Cancel</button></div></div>';
+                cheDelat = true;
+                //document.getElementById('bu2').innerHTML = '<div id="bu3" class="col-md-12 Foorm m-t-10 m-l-10"><div class="col-md-3 Foorm"><a download="" href="" type="button" class="btn btn-outline-danger">Dowanload</a></div><div class="col-md-3 Foorm"><a href="" type="button" class="btn btn-outline-danger">Open</a></div></div>';
+            }
+
+        }
+    </script>
+
 <body>
     <div id="app">Loading...</div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

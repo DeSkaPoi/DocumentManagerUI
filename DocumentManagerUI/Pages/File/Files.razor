@@ -9,7 +9,7 @@
 
 <div class="col-12 dp-ib">
     <div class="offset-md-10 py-2">
-        <button @onclick="ShowModal" type="button" class="btn btn-outline-dark">
+        <button @onclick="@(() => { ShowModal(new FileResponse()); })" type="button" class="btn btn-outline-dark">
             <div class="plus-square-fill.svg">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-plus-lg" viewBox="0 1 16 16">
                     <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
@@ -21,21 +21,17 @@
 </div>
 
 
-
-
-
 <div id="main-content" class="file_manager">
     <div class="container">
         <div class="row clearfix">
 
             @foreach(var file in fileList)
             {
-                
                 <div class="col-2-5">
                     <div class="file">
-                        <a @onclick="ShowModal" type="button" class="btn btn-r btn-light">
+                        <a @onclick="@(() => { ShowModal(file); })" type="button" class="btn btn-r btn-light">
                             <div class="hover">
-                                <buuttom @onclick:stopPropagation="true" @onclick="@(e => { ShowModalDel(file); })"  class="btn btn-sm btn-icon btn-outline-danger">
+                                <buuttom @onclick:stopPropagation="true" @onclick="@(() => { ShowModalDel(file); })"  class="btn btn-sm btn-icon btn-outline-danger">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                                         <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
                                     </svg>
@@ -117,18 +113,18 @@
             fileList = new();
         }
         fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
-    //payloadFileList = await GetFileObject(fileList[0].Id);
-    //fileUrl = payloadFile.File;
     }
 
     private Task HideModal()
     {
         StateHasChanged();
+        this.file = null;
         return modalRef.Hide();
     }
 
-    private Task ShowModal()
+    private Task ShowModal(FileResponse file)
     {
+        this.file = file;
         return modalRef.Show();
     }
 
@@ -140,6 +136,7 @@
 
     private Task HideModalDel()
     {
+        this.file = null;
         return modalDelRef.Hide();
     }
 
@@ -211,8 +208,5 @@
         payloadFileList = new FileListResponse(fileUrl, fileObject.Name);
         StateHasChanged();
     }
-
-
-
 }
 
