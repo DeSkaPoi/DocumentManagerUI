@@ -104,12 +104,10 @@ a:hover {
     color: #343a40;
     border-color: #ffffff;
 }
-
 .btn-outline-danger {
     color: #dc3545;
-    border-color: rgb(0 0 0 / 0%);
+    border-color: white;
 }
-
 .btn-group-sm > .btn, .btn-sm {
     padding: 0.01rem;
     font-size: 0.5rem;
@@ -133,4 +131,29 @@ a:hover {
 .name-file {
     margin-top: 5px;
     margin-bottom: 0px;
+}
+
+.marginSave {
+    margin-left: 376px;
+    margin-top: 9px;
+}
+
+
+.Foorm {
+    display: inline-block;
+}
+.Foorm1 {
+    display: inline-block;
+    float: right;
+}
+.m-t-20 {
+    margin-top: 20px;
+}
+
+.m-t-10 {
+    margin-top: 10px;
+}
+
+.m-l-10 {
+    margin-left: -15px;
 }

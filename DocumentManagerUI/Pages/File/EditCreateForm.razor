@@ -1,0 +1,137 @@
+﻿@using Microsoft.AspNetCore.Components
+@using DocumentManagerUI.ModelResponse
+@using System.Net
+@using System.IO
+@using System.Text.Json
+@using System.Net.Http
+@inject HttpClient Http
+@using System.Net.Http.Json
+@using Microsoft.JSInterop
+
+
+<EditForm Model="@File" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
+    <div class="col-12 Foorm">
+        <label class="form-label">Title</label>
+        <input @bind="File.Title" type="text" class="form-control" id="inputAddress" placeholder="Title" />
+    </div>
+
+    <div class="col-12 py-2 Foorm">
+        <label class="form-label">Format</label>
+        <input @bind="File.Format" type="text" class="form-control" id="inputAddress2" placeholder="Format" />
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">KeyWords</label>
+        <div class="col-12 input-group">
+            <input @bind="File.KeyWords" type="text" class="form-control" aria-label="KeyWords" placeholder="KeyWords"></input>
+        </div>
+    </div>
+
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Description</label>
+        <div class="col-12 input-group">
+            <textarea @bind="File.Description" type="text" class="form-control" aria-label="Description" placeholder="Description"></textarea>
+        </div>
+    </div>
+     
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">ContentType</label>
+        <div class="col-12 input-group">
+            <input @bind="File.ContentType" type="text" class="form-control" aria-label="ContentType" placeholder="ContentType"></input>
+        </div>
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Content</label>
+        <div class="col-12 input-group">
+            <input @bind="File.Content" type="text" class="form-control" aria-label="Content" placeholder="Content"></input>
+        </div>
+    </div>
+    
+    <div class="col-md-6 py-2 Foorm">
+        <label class="form-label">CreationTime</label>
+        <input @bind="File.CreationTime" type="datetime" disabled="disabled" class="form-control" id="inputCity" />
+    </div>
+    
+    <div class="col-md-6 py-2 Foorm1">
+        <label class="form-label">LastUpdate</label>
+        <input @bind="File.LastUpDate" type="datetime" disabled="disabled" class="form-control" id="inputZip" />
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Size</label>
+        <div class="col-12 input-group">
+            <input @bind="File.Size" type="text" class="form-control" aria-label="Size" placeholder="Size"></input>
+        </div>
+    </div>
+    
+    <div class="col-md-12 py-2 Foorm m-b m-t-10">
+        <FileEdit Changed="@OnChanged" />
+    </div>
+    
+    <div class="col-md-12 py-2 Foorm m-b m-t-10">
+        <FileEdit Changed="@OnChanged" />
+        <div class="m-t-10">
+            <button type="submit" class="btn btn-outline-danger">Cancel</button>
+        </div>
+    </div>
+    
+    <div class="col-md-12 Foorm m-t-10 m-l-10">
+        <div class="col-md-3 Foorm">
+            <a download="" href="" type="button" class="btn btn-outline-danger">Dowanload</a>
+        </div>
+        <div class="col-md-3 Foorm">
+            <a href="" type="button" class="btn btn-outline-danger">Open</a>
+        </div>
+    </div>
+
+    <div class="col-3 subButtom Foorm offset-md-8 py-2 marginSave">
+        <button type="submit" class="btn btn-outline-dark">Save</button>
+    </div>
+</EditForm>
+
+
+
+
+@code {
+
+    [Parameter]
+    public FileResponse File { get; set; }
+
+    //FileObjectResponse payloadFile = null;
+
+    private async Task HandleValidSubmit()
+    {
+        string uri = string.Concat("https://localhost:44339/api/FileDescription", File.Id);
+        try
+        {
+            File.LastUpDate = DateTime.Now;
+            var response = await Http.PutAsJsonAsync(uri, File);
+        }
+        catch (Exception ex)
+        {
+            //await ShowModal(ex.Message);
+        }
+    }
+
+    protected async Task OnChanged(FileChangedEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+
+        foreach (var file in e.Files)
+        {
+            using var fileContent = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+            if (File.FileObject == null)
+            {
+                throw new Exception("Mutable object not found");
+            }
+            File.FileObject = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
+
+        }
+    }
+}

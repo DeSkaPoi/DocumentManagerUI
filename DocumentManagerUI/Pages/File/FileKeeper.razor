@@ -60,7 +60,7 @@
 
     private async Task PostFileObject()
     {
-        file.Title = "sdsdsd";
+        file.Title = payloadFile.Name;
         var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", file);
 
         var idfile = await response.Content.ReadAsStringAsync();

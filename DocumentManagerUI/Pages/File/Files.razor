@@ -14,7 +14,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-plus-lg" viewBox="0 1 16 16">
                     <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
                 </svg>
-                Upload
+                Create
             </div>
         </button>
     </div>
@@ -35,11 +35,11 @@
                     <div class="file">
                         <a @onclick="ShowModal" type="button" class="btn btn-r btn-light">
                             <div class="hover">
-                                <a @onclick:stopPropagation="true" @onclick="@(e => {GetFileObject(file.Id); })" download="@payloadFileList.Name" href="@payloadFileList.File" type="button" class="btn btn-sm btn-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-down-square-fill" viewBox="0 0 16 16">
-                                        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V4.5a.5.5 0 0 1 1 0z"/>
+                                <buuttom @onclick:stopPropagation="true" @onclick="@(e => { ShowModalDel(file); })"  class="btn btn-sm btn-icon btn-outline-danger">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
                                     </svg>
-                                </a>
+                                </buuttom>
                             </div>
                             <div >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
@@ -60,15 +60,24 @@
 <Modal @ref="modalRef">
     <ModalContent Centered>
         <ModalHeader>
-            <ModalTitle>Загрузить файл</ModalTitle>
+            <ModalTitle>Create/Edit File</ModalTitle>
             <CloseButton />
         </ModalHeader>
         <ModalBody>
-            <FileEdit Changed="@OnChanged" />
-        </ModalBody>
+            <EditCreateForm File="file"></EditCreateForm>
+            </ModalBody>
+    </ModalContent>
+</Modal>
+
+<Modal @ref="modalDelRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Are you sure?</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
         <ModalFooter>
-            <Button Color="Color.Success" Clicked="@UploadFile">Загрузить</Button>
-            <Button Color="Color.Danger" Clicked="@HideModal">Закрыть</Button>
+            <Button Color="Color.Danger" Clicked="@DeleteFile">Yes, delete</Button>
+            <Button Color="Color.Secondary" Clicked="@HideModalDel">No, leave the file </Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
@@ -77,15 +86,17 @@
     string fileUrl = "";
     private int maxAllowedFiles = 3;
 
-    List<FileInfoResponse> fileList = new();
+    List<FileResponse> fileList = new();
     FileListResponse payloadFileList = new FileListResponse();
     Payload p = new Payload();
     
-    FileInfoResponse file = new FileInfoResponse();
+    FileResponse file = new FileResponse();
     FileObjectResponse payloadFile = new();
     
     MultipartFormDataContent content = new MultipartFormDataContent();
     public Modal modalRef { get; set; }
+    public Modal modalDelRef { get; set; }
+
 
     
     public class Payload
@@ -105,24 +116,31 @@
         {
             fileList = new();
         }
-        fileList = await Http.GetFromJsonAsync<List<FileInfoResponse>>("https://localhost:44339/api/FileDescription");
+        fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
     //payloadFileList = await GetFileObject(fileList[0].Id);
     //fileUrl = payloadFile.File;
     }
 
     private Task HideModal()
     {
-        return modalRef.Hide();
-    }
-
-    private Task UploadFile()
-    {
+        StateHasChanged();
         return modalRef.Hide();
     }
 
     private Task ShowModal()
     {
         return modalRef.Show();
+    }
+
+    private Task ShowModalDel(FileResponse file)
+    {
+        this.file = file;
+        return modalDelRef.Show();
+    }
+
+    private Task HideModalDel()
+    {
+        return modalDelRef.Hide();
     }
 
     protected async Task OnChanged(FileChangedEventArgs e)
@@ -144,10 +162,13 @@
     }
 
 
-
-
-   
-   
+    private async Task DeleteFile()
+    {
+        await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{file.Id}");
+        fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
+        StateHasChanged();
+        HideModalDel();
+    }
 
     private async Task OnInputFileObjectChange(InputFileChangeEventArgs e)
     {
