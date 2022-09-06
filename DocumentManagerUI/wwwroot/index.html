@@ -20,23 +20,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/4.5.6/css/ionicons.min.css" integrity="sha512-0/rEDduZGrqo4riUlwqyuHDQzp2D1ZCgH/gFIfjMIL5az8so6ZiXyhf1Rg8i6xsjv+z/Ubc4tt1thLigEcu6Ug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
-    </head>
 
     <script>
-        var cheDelat = new Boolean(false);
+        var cheDelat = new Boolean(true);
         function rebutton() {
+            
+
             if (cheDelat) {
-                document.getElementById('bu1').innerHTML = '<div id="Bu1" class="col-md-12 py-2 Foorm m-b m-t-10"><FileEdit Changed="@OnChanged" /></div>';
+                document.getElementById('Bu').innerHTML = '<div id="Bu2" class="col-md-12 py-2 Foorm m-b m-t-10"><FileEdit Changed="@OnChanged" /><div class="m-t-10"><button type="submit" class="btn btn-outline-danger">Cancel</button></div></div>';
                 cheDelat = false;
             }
             else {
-                document.getElementById('bu1').innerHTML = ' <div id="Bu1" class="col-md-12 py-2 Foorm m-b m-t-10"><FileEdit Changed="@OnChanged" /><div class="m-t-10"><button type="submit" class="btn btn-outline-danger">Cancel</button></div></div>';
+                document.getElementById('Bu').innerHTML = ' <div id="Bu2" class="col-md-12 py-2 Foorm m-b m-t-10"><FileEdit Changed="@OnChanged" /><div class="m-t-10"><button type="submit" class="btn btn-outline-danger">Cancel</button></div></div>';
                 cheDelat = true;
                 //document.getElementById('bu2').innerHTML = '<div id="bu3" class="col-md-12 Foorm m-t-10 m-l-10"><div class="col-md-3 Foorm"><a download="" href="" type="button" class="btn btn-outline-danger">Dowanload</a></div><div class="col-md-3 Foorm"><a href="" type="button" class="btn btn-outline-danger">Open</a></div></div>';
             }
 
         }
     </script>
+
+</head>
+
+    
 
 <body>
     <div id="app">Loading...</div>

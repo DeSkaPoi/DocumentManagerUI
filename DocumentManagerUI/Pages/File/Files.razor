@@ -60,8 +60,9 @@
             <CloseButton />
         </ModalHeader>
         <ModalBody>
+            
             <EditCreateForm File="file"></EditCreateForm>
-            </ModalBody>
+        </ModalBody>
     </ModalContent>
 </Modal>
 
@@ -113,18 +114,20 @@
             fileList = new();
         }
         fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
+        int k = 0;
     }
 
     private Task HideModal()
     {
         StateHasChanged();
-        this.file = null;
+        this.file = new FileResponse();
         return modalRef.Hide();
     }
 
     private Task ShowModal(FileResponse file)
     {
         this.file = file;
+        GetFileObject(file.Id);
         return modalRef.Show();
     }
 
@@ -136,34 +139,15 @@
 
     private Task HideModalDel()
     {
-        this.file = null;
+        StateHasChanged();
+        this.file = new FileResponse();
         return modalDelRef.Hide();
     }
-
-    protected async Task OnChanged(FileChangedEventArgs e)
-    {
-        long maxFileSize = 1024 * 1024 * 100;
-
-        foreach (var file in e.Files)
-        {
-            using var fileContent = file.OpenReadStream(maxFileSize);
-            using var ms = new MemoryStream();
-            await fileContent.CopyToAsync(ms);
-
-            if (payloadFile == null)
-            {
-                throw new Exception("Mutable object not found");
-            }
-            payloadFile = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
-        }
-    }
-
 
     private async Task DeleteFile()
     {
         await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{file.Id}");
         fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
-        StateHasChanged();
         HideModalDel();
     }
 
@@ -185,28 +169,9 @@
         }
     }
 
-    private async Task PostFileObject()
-    {
-        file.Title = "sdsdsd";
-        var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", file);
-
-        var idfile = await response.Content.ReadAsStringAsync();
-        idfile = idfile.Trim('"');
-        //var newFile = JsonSerializer.
-
-        var req = $"https://localhost:44339/api/FilePayload/file/{idfile}";
-        var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", payloadFile);
-
-        Console.WriteLine(statusInfo);
-    }
-
-
     private async Task GetFileObject(Guid Id)
     {
-        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
-        var fileUrl = $"data:{fileObject.FileTypeMime};base64,{Convert.ToBase64String(fileObject.File)}";
-        payloadFileList = new FileListResponse(fileUrl, fileObject.Name);
-        StateHasChanged();
+        file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
     }
 }
 
