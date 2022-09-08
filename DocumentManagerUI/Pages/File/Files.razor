@@ -54,13 +54,12 @@
 </div>
 
 <Modal @ref="modalRef">
-    <ModalContent Centered>
+    <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
         <ModalHeader>
             <ModalTitle>Create/Edit File</ModalTitle>
             <CloseButton />
         </ModalHeader>
         <ModalBody>
-            
             <EditCreateForm File="file"></EditCreateForm>
         </ModalBody>
     </ModalContent>
