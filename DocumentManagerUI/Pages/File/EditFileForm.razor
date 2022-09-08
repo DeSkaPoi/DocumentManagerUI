@@ -1,0 +1,170 @@
+﻿@using Microsoft.AspNetCore.Components
+@using DocumentManagerUI.ModelResponse
+@using System.Net
+@using System.IO
+@using System.Text.Json
+@using System.Net.Http
+@inject HttpClient Http
+@using System.Net.Http.Json
+@using Microsoft.JSInterop
+@inject IJSRuntime jsRuntime
+
+
+<EditForm Model="@File" OnValidSubmit="@PutFileObject">
+    <DataAnnotationsValidator />
+    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
+    <div class="col-12 Foorm">
+        <label class="form-label">Title</label>
+        <input @bind="File.Title" type="text" class="form-control" id="inputAddress" placeholder="Title" />
+    </div>
+
+    <div class="col-12 py-2 Foorm">
+        <label class="form-label">Format</label>
+        <input @bind="File.Format" type="text" class="form-control" id="inputAddress2" placeholder="Format" />
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">KeyWords</label>
+        <div class="col-12 input-group">
+            <input @bind="File.KeyWords" type="text" class="form-control" aria-label="KeyWords" placeholder="KeyWords"></input>
+        </div>
+    </div>
+
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Description</label>
+        <div class="col-12 input-group">
+            <textarea @bind="File.Description" type="text" class="form-control" aria-label="Description" placeholder="Description"></textarea>
+        </div>
+    </div>
+     
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">ContentType</label>
+        <div class="col-12 input-group">
+            <input @bind="File.ContentType" type="text" class="form-control" aria-label="ContentType" placeholder="ContentType"></input>
+        </div>
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Content</label>
+        <div class="col-12 input-group">
+            <input @bind="File.Content" type="text" class="form-control" aria-label="Content" placeholder="Content"></input>
+        </div>
+    </div>
+    
+    <div class="col-md-6 py-2 Foorm">
+        <label class="form-label">CreationTime</label>
+        <input @bind="File.CreationTime" type="datetime" disabled="disabled" class="form-control" id="inputCity" />
+    </div>
+    
+    <div class="col-md-6 py-2 Foorm1">
+        <label class="form-label">LastUpdate</label>
+        <input @bind="File.LastUpDate" type="datetime" disabled="disabled" class="form-control" id="inputZip" />
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Size</label>
+        <div class="col-12 input-group">
+            <input @bind="File.Size" type="text" class="form-control" aria-label="Size" placeholder="Size"></input>
+        </div>
+    </div>
+    
+    @if (param == 1)
+    {
+        <div id="Bu" class="col-md-12 Foorm m-t-10 m-l-10">
+            <div class="col-md-3 Foorm">
+                <a download="@(Href("n") )" href="@(Href("h"))" type="button" class="btn btn-outline-dark">Dowanload</a>
+            </div>
+            <div class="col-md-5 Foorm">
+                <button type="button" @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="@(() => { param = 2; StateHasChanged();})" class="btn btn-outline-dark">Overwrite file</button>
+            </div>
+        </div>
+    }
+    else if(param == 2)
+    {
+        <div id="Bu" class="col-md-12 py-2 Foorm m-b m-t-10">
+            <FileEdit Changed="@OnChange"/>
+            <div class="m-t-10">
+                <button @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="@(() => { param = 1; StateHasChanged(); })" type="submit" class="btn btn-outline-danger">Cancel</button>
+            </div>
+        </div>
+    }
+
+    <div class="subButtom Foorm py-2 marginSave" >
+        <Button id="12" Type="ButtonType.Submit" Color="Color.Dark" Loading="isLoading">
+            <LoadingTemplate>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Saving...
+            </LoadingTemplate>
+            <ChildContent>
+                Save
+            </ChildContent>
+        </Button>
+    </div>
+</EditForm>
+
+
+
+
+@code {
+
+    [Parameter]
+    public FileResponse File { get; set; }
+
+    bool tmp = false;
+    bool isLoading = false;
+    int param = 1;
+
+    public string Href(string s)
+    {
+        if (File.FileObject == null)
+        {
+            Task.Run(GetFileObject);
+            return "";
+        }
+        else if(s == "h")
+        {
+            return $"data:{File.FileObject.FileTypeMime};base64,{Convert.ToBase64String(File.FileObject.File)}";
+        }
+        else
+        {
+            return File.FileObject.Name;
+        }
+    }
+
+    protected async Task OnChange(FileChangedEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+
+        foreach (var file in e.Files)
+        {
+            using var fileContent = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+           
+            File.FileObject = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
+
+            if (File.FileObject == null)
+            {
+                throw new Exception("Mutable object not found");
+            }
+        }
+    }
+
+    private async Task PutFileObject()
+    {
+        isLoading = true;
+        File.LastUpDate = DateTime.Now;
+        var statusInfo1 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FileDescription/{File.Id}", File);
+        var statusInfo2 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{File.Id}", File.FileObject);
+        await Task.Delay(1000);
+        isLoading = false;
+    }
+
+    private async Task GetFileObject()
+    {
+        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{File.Id}");
+        File.FileObject = fileObject;
+        StateHasChanged();
+    }
+}

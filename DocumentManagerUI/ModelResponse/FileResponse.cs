@@ -16,7 +16,12 @@ namespace DocumentManagerUI.ModelResponse
         public string Size { get; set; }
         public FileObjectResponse FileObject { get; set; }
 
-        //public FileInfoResponse() { }
+        public FileResponse() { }
+
+        public FileResponse(FileObjectResponse response)
+        {
+            FileObject = response;
+        }
 
         /*public FileInfoResponse(Guid id, string title, string format, string keyWords, string description, int? contentType,
             string content, DateTime creationTime, DateTime lastUpDate, string size, FileObjectResponse fileObj)

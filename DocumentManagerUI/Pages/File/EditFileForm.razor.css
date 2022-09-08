@@ -133,9 +133,10 @@ a:hover {
     margin-bottom: 0px;
 }
 
-.marginSave {
-    margin-left: 660px;
+.marginSave{
+    margin-right: 16px;
     margin-top: 9px;
+    float: right;
 }
 
 
@@ -156,4 +157,34 @@ a:hover {
 
 .m-l-10 {
     margin-left: -15px;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
+
+.spinner-border{
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    vertical-align: -0.125em;
+    border: 0.18em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: .75s linear infinite spinner-border;
+    animation: .75s linear infinite spinner-border;
+}
+
+.spinner-border1 {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: -0.125em;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: .75s linear infinite spinner-border;
+    animation: .75s linear infinite spinner-border;
 }

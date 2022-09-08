@@ -1,0 +1,177 @@
+﻿body {
+    background-color: #f4f7f6;
+    margin-top: 20px;
+}
+
+.file_manager .file a:hover .hover,
+.file_manager .file .file-name small {
+    display: block
+
+}
+
+.file_manager  {
+    padding-left: 15px; 
+}
+
+    .file_manager .file .icon {
+        text-align: center
+    }
+
+
+.file_manager .file {
+    position: relative;
+    border-radius: .55rem;
+    overflow: hidden
+}
+
+    .file_manager .file .image,
+    .file_manager .file .icon {
+        max-height: 180px;
+        overflow: hidden;
+        background-size: cover;
+        background-position: top
+    }
+
+    .file_manager .file .hover {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        display: none;
+        transition: all 0.2s ease-in-out
+    }
+
+    .file_manager .file a:hover .hover {
+        transition: all 0.2s ease-in-out
+    }
+
+    .file_manager .file .icon {
+        padding: 15px 10px;
+        display: table;
+        width: 100%
+    }
+
+        .file_manager .file .icon i {
+            display: table-cell;
+            font-size: 80px;
+            vertical-align: middle;
+            color: #777;
+            line-height: 100px
+        }
+
+    
+
+        .file_manager .file .file-name small .date {
+            float: right
+        }
+
+.folder {
+    padding: 20px;
+    display: block;
+    color: #777
+}
+
+@media only screen and (max-width: 992px) {
+    .file_manager {
+        padding-left: 0;
+        padding-right: 0
+    }
+
+        .file_manager .nav-tabs .nav-item {
+            display: inline-block
+        }
+}
+
+.card {
+    background: #fff;
+    transition: .5s;
+    border: 0;
+    margin-bottom: 30px;
+    border-radius: .55rem;
+    position: relative;
+    width: 100%;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%);
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.dp-ib {
+    display: inline-block;
+}
+
+.btn-outline-dark {
+    color: #343a40;
+    border-color: #ffffff;
+}
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: white;
+}
+.btn-group-sm > .btn, .btn-sm {
+    padding: 0.01rem;
+    font-size: 0.5rem;
+    line-height: 0.01;
+    border-radius: 0.2rem;
+}
+
+.col-2-5 {
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+    min-width: 0%;
+    padding: 0px;
+    margin-right: 10px;
+}
+
+.btn-r {
+    padding: 10px;
+    border-radius: 0.5rem;
+}
+
+.name-file {
+    margin-top: 5px;
+    margin-bottom: 0px;
+}
+
+.marginSave {
+    margin-right: 16px;
+    margin-top: 9px;
+    float: right;
+}
+
+
+.Foorm {
+    display: inline-block;
+}
+.Foorm1 {
+    display: inline-block;
+    float: right;
+}
+.m-t-20 {
+    margin-top: 20px;
+}
+
+.m-t-10 {
+    margin-top: 10px;
+}
+
+.m-l-10 {
+    margin-left: -15px;
+}
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
+
+.spinner-border {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    vertical-align: -0.125em;
+    border: 0.18em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: .75s linear infinite spinner-border;
+    animation: .75s linear infinite spinner-border;
+}

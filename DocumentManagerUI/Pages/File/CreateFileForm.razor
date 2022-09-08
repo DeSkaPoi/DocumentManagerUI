@@ -10,7 +10,7 @@
 @inject IJSRuntime jsRuntime
 
 
-<EditForm Model="@File" OnValidSubmit="@PutPostFileObject">
+<EditForm Model="@File" OnValidSubmit="@PostFileObject">
     <DataAnnotationsValidator />
     <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
     <div class="col-12 Foorm">
@@ -68,35 +68,20 @@
         </div>
     </div>
     
-    @if (param == 0)
-    {
-        <div id="Bu" class="col-md-12 Foorm m-t-10 m-l-10">
-            <div class="col-md-3 Foorm">
-                <a download="@File.FileObject.Name" href="@($"data:{File.FileObject.FileTypeMime};base64,{Convert.ToBase64String(File.FileObject.File)}")" type="button" class="btn btn-outline-dark">Dowanload</a>
-            </div>
-            <div class="col-md-5 Foorm">
-                <button type="button" @onclick="@(() => { param = 1; })" class="btn btn-outline-dark">Overwrite file</button>
-            </div>
-        </div>
-    }
-    else if (param == 1)
-    {
-        <div id="Bu" class="col-md-12 py-2 Foorm m-b m-t-10">
-            <FileEdit Changed="@OnChange"/>
-            <div class="m-t-10">
-                <button @onclick="@(() => { param = 0; })" type="submit" class="btn btn-outline-danger">Cancel</button>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div id="Bu" class="col-md-12 py-2 Foorm m-b m-t-10">
-            <FileEdit Changed="@OnChange" />
-        </div>
-    }
+    <div id="Bu" class="col-md-12 py-2 Foorm m-b m-t-10">
+        <FileEdit Changed="@OnChange" />
+    </div>
 
-    <div class="col-1 subButtom Foorm offset-md-5 py-2 marginSave">
-        <button type="submit" class="btn btn-outline-dark">Save</button>
+    <div class="subButtom Foorm py-2 marginSave">
+        <Button id="12" Type="ButtonType.Submit" Color="Color.Dark" Loading="isLoading">
+            <LoadingTemplate>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Saving...
+            </LoadingTemplate>
+            <ChildContent>
+                Save
+            </ChildContent>
+        </Button>
     </div>
 </EditForm>
 
@@ -108,15 +93,7 @@
     [Parameter]
     public FileResponse File { get; set; }
 
-    int param = 2;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (File.FileObject == null)
-        {
-            param = 1;
-        }
-    }
+    bool isLoading = false;
 
     private async Task HandleValidSubmit()
     {
@@ -149,52 +126,17 @@
             {
                 throw new Exception("Mutable object not found");
             }
-            //UpdateTitle();
-            param = 0;
-            StateHasChanged();
         }
-    }
-
-    private async Task PutPostFileObject()
-    {
-        if (File.Id == Guid.Empty)
-        {
-            this.File.CreationTime = DateTime.Now;
-            this.File.LastUpDate = DateTime.Now;
-            await PostFileObject();
-        }
-        else
-        {
-            this.File.LastUpDate = DateTime.Now;
-            await PutFileObject();
-        }
-        StateHasChanged();
-    }
-
-    private async Task PutFileObject()
-    {
-        var statusInfo1 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FileDescription/{File.Id}", File);
-        var statusInfo2 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{File.Id}", File.FileObject);
     }
 
     private async Task PostFileObject()
     {
+        this.File.CreationTime = DateTime.Now;
+        this.File.LastUpDate = DateTime.Now;
         var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
 
         var idfile = await response.Content.ReadAsStringAsync();
         idfile = idfile.Trim('"');
         var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", File.FileObject);
-    }
-
-    private async Task<FileObjectResponse> GetFileObject(Guid Id)
-    {
-        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
-        return fileObject;
-    }
-
-    private void UpdateTitle()
-    {
-        param = 1;
-        StateHasChanged();
     }
 }

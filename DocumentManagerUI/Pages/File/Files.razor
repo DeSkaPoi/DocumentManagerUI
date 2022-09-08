@@ -9,7 +9,7 @@
 
 <div class="col-12 dp-ib">
     <div class="offset-md-10 py-2">
-        <button @onclick="@(() => { ShowModal(new FileResponse()); })" type="button" class="btn btn-outline-dark">
+        <button @onclick="@(() => { ShowModal(new FileResponse());})" type="button" class="btn btn-outline-dark">
             <div class="plus-square-fill.svg">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-plus-lg" viewBox="0 1 16 16">
                     <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
@@ -29,7 +29,7 @@
             {
                 <div class="col-2-5">
                     <div class="file">
-                        <a @onclick="@(() => { ShowModal(file); })" type="button" class="btn btn-r btn-light">
+                        <a @onclick="@(() => { ShowChangeModal(file);})" type="button" class="btn btn-r btn-light">
                             <div class="hover">
                                 <buuttom @onclick:stopPropagation="true" @onclick="@(() => { ShowModalDel(file); })"  class="btn btn-sm btn-icon btn-outline-danger">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
@@ -53,23 +53,35 @@
     </div>
 </div>
 
-<Modal @ref="modalRef">
+<Modal @ref="modalChangeRef" Closed="HideChangeModal">
     <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
         <ModalHeader>
-            <ModalTitle>Create/Edit File</ModalTitle>
-            <CloseButton />
+            <ModalTitle>Edit File</ModalTitle>
+            <CloseButton Clicked="HideChangeModal" />
         </ModalHeader>
         <ModalBody>
-            <EditCreateForm File="file"></EditCreateForm>
+            <EditFileForm File="file"></EditFileForm>
         </ModalBody>
     </ModalContent>
 </Modal>
 
-<Modal @ref="modalDelRef">
+<Modal @ref="modalCreateRef" Closed="HideModal">
+    <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>Create File</ModalTitle>
+            <CloseButton Clicked="HideModal"/>
+        </ModalHeader>
+        <ModalBody>
+            <CreateFileForm File="file"></CreateFileForm>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+<Modal @ref="modalDelRef" Closed="HideModalDel">
     <ModalContent Centered>
         <ModalHeader>
             <ModalTitle>Are you sure?</ModalTitle>
-            <CloseButton />
+            <CloseButton Clicked="HideModalDel"/>
         </ModalHeader>
         <ModalFooter>
             <Button Color="Color.Danger" Clicked="@DeleteFile">Yes, delete</Button>
@@ -84,27 +96,14 @@
 
     List<FileResponse> fileList = new();
     FileListResponse payloadFileList = new FileListResponse();
-    Payload p = new Payload();
-    
+
     FileResponse file = new FileResponse();
     FileObjectResponse payloadFile = new();
     
     MultipartFormDataContent content = new MultipartFormDataContent();
-    public Modal modalRef { get; set; }
+    public Modal modalCreateRef { get; set; }
+    public Modal modalChangeRef { get; set; }
     public Modal modalDelRef { get; set; }
-
-
-    
-    public class Payload
-    {
-        public event EventHandler<MouseEventArgs> ThresholdReached;
-
-        protected virtual void OnThresholdReached(MouseEventArgs e)
-        {
-            EventHandler<MouseEventArgs> handler = ThresholdReached;
-            handler?.Invoke(this, e);
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,21 +112,37 @@
             fileList = new();
         }
         fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
-        int k = 0;
+        file = fileList.FirstOrDefault();
     }
 
-    private Task HideModal()
+    private async Task HideModal()
     {
+        //StateHasChanged();
+        await modalCreateRef.Hide();
+        this.fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
         StateHasChanged();
-        this.file = new FileResponse();
-        return modalRef.Hide();
     }
 
-    private Task ShowModal(FileResponse file)
+    private async Task ShowModal(FileResponse file)
     {
         this.file = file;
         GetFileObject(file.Id);
-        return modalRef.Show();
+        
+        await modalCreateRef.Show();
+    }
+
+    private async Task HideChangeModal()
+    {
+        this.fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
+        StateHasChanged();
+        await modalChangeRef.Hide();
+    }
+
+    private Task ShowChangeModal(FileResponse file)
+    {
+        GetFileObject(file.Id);
+        this.file = file;
+        return modalChangeRef.Show();
     }
 
     private Task ShowModalDel(FileResponse file)
