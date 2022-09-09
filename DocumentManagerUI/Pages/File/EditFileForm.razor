@@ -122,8 +122,6 @@
 
     [Parameter]
     public FileResponse File { get; set; }
-    [Parameter]
-    public string IdDocument { get; set; }
 
     public FileObjectResponse fileTmp = new FileObjectResponse();
     string size;
@@ -213,7 +211,7 @@
             isLoading = true;
             File.LastUpDate = DateTime.Now;
 
-            if (fileTmp == null)
+            if (fileTmp.File == null)
             {
                 fileTmp = File.FileObject;
             }

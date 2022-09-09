@@ -106,10 +106,10 @@
 @code {
 
     [Parameter]
-    public FileResponse File { get; set; }
-    
-    [Parameter]
     public string IdDocument { get; set; }
+
+    [Parameter]
+    public FileResponse File { get; set; }
     
     public Modal modalRef { get; set; }
 
@@ -183,7 +183,6 @@
         {
             File.CreationTime = DateTime.Now;
             File.LastUpDate = DateTime.Now;
-            File.DocumentId = Guid.Parse(IdDocument);
             var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
 
             if (!response.IsSuccessStatusCode)
@@ -197,6 +196,12 @@
             if (!statusInfo.IsSuccessStatusCode)
             {
                 await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{idfile}");
+                throw new Exception("Error - 500. Internal Server Error - Post");
+            }
+
+            var response2 = await Http.PostAsJsonAsync($"https://localhost:5001/api/DocumentFiles/{IdDocument}/{idfile}", new object());
+            if (!response2.IsSuccessStatusCode)
+            {
                 throw new Exception("Error - 500. Internal Server Error - Post");
             }
 

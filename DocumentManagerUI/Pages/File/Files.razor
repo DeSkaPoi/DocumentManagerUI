@@ -60,7 +60,7 @@
             <CloseButton Clicked="HideChangeModal" />
         </ModalHeader>
         <ModalBody>
-            <EditFileForm File="file" IdDocument="@IdDocument"></EditFileForm>
+            <EditFileForm File="file"></EditFileForm>
         </ModalBody>
     </ModalContent>
 </Modal>
@@ -115,13 +115,26 @@
         {
             fileList = new();
         }
-        fileList = await Http.GetFromJsonAsync<List<FileResponse>>($"https://localhost:44339/api/FileDescription/{IdDocument}");
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");    
+            fileList.Add(fileOb);
+        }
+        int k = 0;
     }
 
     private async Task HideModal()
     {
         await modalCreateRef.Hide();
-        this.fileList = await Http.GetFromJsonAsync<List<FileResponse>>($"https://localhost:44339/api/FileDescription/{IdDocument}");
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}"); 
+            fileList.Add(fileOb);
+        }
         StateHasChanged();
     }
 
@@ -134,7 +147,13 @@
     private async Task HideChangeModal()
     {
         await modalChangeRef.Hide();
-        this.fileList = await Http.GetFromJsonAsync<List<FileResponse>>($"https://localhost:44339/api/FileDescription/{IdDocument}");
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");    
+            fileList.Add(fileOb);
+        }
         StateHasChanged();
     }
 
@@ -161,7 +180,15 @@
     private async Task DeleteFile()
     {
         await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{file.Id}");
-        fileList = await Http.GetFromJsonAsync<List<FileResponse>>($"https://localhost:44339/api/FileDescription/{IdDocument}");
+        await Http.DeleteAsync($"https://localhost:5001/api/DocumentFiles/{IdDocument}/{file.Id}");
+    
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");
+            fileList.Add(fileOb);
+        }
         HideModalDel();
     }
 
@@ -185,8 +212,8 @@
 
     private async Task<FileResponse> GetFileObject(Guid Id)
     {
-        var file = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{IdDocument}/{Id}");
-        file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{IdDocument}/{Id}");
+        var file = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{Id}");
+        file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
         return file;
     }
 }
