@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DocumentManagerUI.ModelResponse
 {
@@ -9,13 +10,14 @@ namespace DocumentManagerUI.ModelResponse
         public string Format { get; set; }
         public string KeyWords { get; set; }
         public string Description { get; set; }
+        [Range(typeof(int), "0", "2147483647", ErrorMessage = "The value {0} must be a positive number.")]
         public int? ContentType { get; set; }
         public string Content { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime LastUpDate { get; set; }
         public string Size { get; set; }
         public FileObjectResponse FileObject { get; set; }
-
+        
         public FileResponse() { }
 
         public FileResponse(FileObjectResponse response)

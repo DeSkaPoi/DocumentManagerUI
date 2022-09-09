@@ -64,12 +64,12 @@
     <div class="col-12 py-2 px-0 py-0 Foorm">
         <label class="form-label col-12">Size</label>
         <div class="col-12 input-group">
-            <input @bind="File.Size" type="text" class="form-control" aria-label="Size" placeholder="Size"></input>
+            <input @bind="File.Size" type="text" disabled="disabled" class="form-control" aria-label="Size" placeholder="Size"></input>
         </div>
     </div>
     
-    <div id="Bu" class="col-md-12 py-2 Foorm m-b m-t-10">
-        <FileEdit Changed="@OnChange" />
+    <div id="Butr" class="col-md-12 py-2 Foorm m-b m-t-10">
+        <FileEdit Changed="@OnChange" Progressed="@OnProgressed" />
     </div>
 
     <div class="subButtom Foorm py-2 marginSave">
@@ -86,57 +86,133 @@
 </EditForm>
 
 
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Employee edit</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            @ErrorMessage
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
 
 
 @code {
 
     [Parameter]
     public FileResponse File { get; set; }
+    public Modal modalRef { get; set; }
 
     bool isLoading = false;
+    string ErrorMessage = "";
 
-    private async Task HandleValidSubmit()
+    enum Size
     {
-        string uri = string.Concat("https://localhost:44339/api/FileDescription", File.Id);
-        try
-        {
-            File.LastUpDate = DateTime.Now;
-            var response = await Http.PostAsJsonAsync(uri, File);
-        }
-        catch (Exception ex)
-        {
-            //await ShowModal(ex.Message);
-        }
+        KB = 1,
+        Mb,
+        Gb
+    }
+
+    async Task OnProgressed(FileProgressedEventArgs e)
+    {
+        Console.WriteLine($"File: {e.File.Name} Progress: {e.Percentage}");
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+
+    private Task ShowModal(string message)
+    {
+        ErrorMessage = message;
+        return modalRef.Show();
     }
 
     protected async Task OnChange(FileChangedEventArgs e)
     {
-        long maxFileSize = 1024 * 1024 * 100;
-
-        foreach (var file in e.Files)
+        try
         {
-            using var fileContent = file.OpenReadStream(maxFileSize);
-            using var ms = new MemoryStream();
-            await fileContent.CopyToAsync(ms);
+            long maxFileSize = 1024 * 1024 * 100;
+
+            foreach (var file in e.Files)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await file.WriteToStreamAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    File.Size = ConvertingValueFromBytes(file.Size, 0);
+                    File.FileObject = new FileObjectResponse(file.Name, stream.ToArray(), file.Type);
+
+                    if (File.FileObject == null)
+                    {
+                        throw new Exception("Mutable object not found");
+                    }
+                }
+                
+
+                
+                /*using var fileContent = file.OpenReadStream(maxFileSize);
+                using var ms = new MemoryStream();
+                await fileContent.CopyToAsync(ms);*/
 
            
-            File.FileObject = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
-
-            if (File.FileObject == null)
-            {
-                throw new Exception("Mutable object not found");
+                
             }
         }
+        catch (Exception ex)
+        {
+            ShowModal(ex.Message);
+        }
+        
     }
 
     private async Task PostFileObject()
     {
-        this.File.CreationTime = DateTime.Now;
-        this.File.LastUpDate = DateTime.Now;
-        var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
+        try
+        {
+            this.File.CreationTime = DateTime.Now;
+            this.File.LastUpDate = DateTime.Now;
+            var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
 
-        var idfile = await response.Content.ReadAsStringAsync();
-        idfile = idfile.Trim('"');
-        var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", File.FileObject);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("Error - 500. Internal Server Error - Post");
+            }
+
+            var idfile = await response.Content.ReadAsStringAsync();
+            idfile = idfile.Trim('"');
+            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", File.FileObject);
+            if (!statusInfo.IsSuccessStatusCode)
+            {
+                await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{idfile}");
+                throw new Exception("Error - 500. Internal Server Error - Post");
+            }
+
+        }
+        catch (Exception e)
+        {
+            ShowModal(e.Message);
+        }
+        
     }
+
+    string ConvertingValueFromBytes(double size, int i)
+    {
+        if (size / 1024 > 1)
+        {
+            return ConvertingValueFromBytes(size / 1024, ++i);
+        }
+        else
+        {
+            return $"{Math.Round(size, 2)} {(Size)i}";
+        }
+    }
+
 }

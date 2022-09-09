@@ -84,7 +84,7 @@
             <CloseButton Clicked="HideModalDel"/>
         </ModalHeader>
         <ModalFooter>
-            <Button Color="Color.Danger" Clicked="@DeleteFile">Yes, delete</Button>
+            <Button Color="Color.Danger" Clicked="@(() => {  return DeleteFile(); })">Yes, delete</Button>
             <Button Color="Color.Secondary" Clicked="@HideModalDel">No, leave the file </Button>
         </ModalFooter>
     </ModalContent>
@@ -112,12 +112,10 @@
             fileList = new();
         }
         fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
-        file = fileList.FirstOrDefault();
     }
 
     private async Task HideModal()
     {
-        //StateHasChanged();
         await modalCreateRef.Hide();
         this.fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
         StateHasChanged();
@@ -126,23 +124,21 @@
     private async Task ShowModal(FileResponse file)
     {
         this.file = file;
-        GetFileObject(file.Id);
-        
         await modalCreateRef.Show();
     }
 
     private async Task HideChangeModal()
     {
+        await modalChangeRef.Hide();
         this.fileList = await Http.GetFromJsonAsync<List<FileResponse>>("https://localhost:44339/api/FileDescription");
         StateHasChanged();
-        await modalChangeRef.Hide();
     }
 
-    private Task ShowChangeModal(FileResponse file)
+    private async Task ShowChangeModal(FileResponse file)
     {
-        GetFileObject(file.Id);
-        this.file = file;
-        return modalChangeRef.Show();
+        var tmpFile= await GetFileObject(file.Id);
+        this.file = tmpFile;
+        await modalChangeRef.Show();
     }
 
     private Task ShowModalDel(FileResponse file)
@@ -151,11 +147,11 @@
         return modalDelRef.Show();
     }
 
-    private Task HideModalDel()
+    private async Task HideModalDel()
     {
+        await modalDelRef.Hide();
+        //this.file = new FileResponse();
         StateHasChanged();
-        this.file = new FileResponse();
-        return modalDelRef.Hide();
     }
 
     private async Task DeleteFile()
@@ -183,9 +179,11 @@
         }
     }
 
-    private async Task GetFileObject(Guid Id)
+    private async Task<FileResponse> GetFileObject(Guid Id)
     {
+        var file = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{Id}");
         file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
+        return file;
     }
 }
 

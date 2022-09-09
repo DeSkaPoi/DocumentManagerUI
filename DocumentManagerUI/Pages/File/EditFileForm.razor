@@ -64,7 +64,7 @@
     <div class="col-12 py-2 px-0 py-0 Foorm">
         <label class="form-label col-12">Size</label>
         <div class="col-12 input-group">
-            <input @bind="File.Size" type="text" class="form-control" aria-label="Size" placeholder="Size"></input>
+            <input @bind="File.Size" disabled="disabled" type="text" class="form-control" aria-label="Size" placeholder="Size"></input>
         </div>
     </div>
     
@@ -75,7 +75,7 @@
                 <a download="@(Href("n") )" href="@(Href("h"))" type="button" class="btn btn-outline-dark">Dowanload</a>
             </div>
             <div class="col-md-5 Foorm">
-                <button type="button" @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="@(() => { param = 2; StateHasChanged();})" class="btn btn-outline-dark">Overwrite file</button>
+                <button type="button" @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="@(() => { param = 2; })" class="btn btn-outline-dark">Overwrite file</button>
             </div>
         </div>
     }
@@ -84,7 +84,7 @@
         <div id="Bu" class="col-md-12 py-2 Foorm m-b m-t-10">
             <FileEdit Changed="@OnChange"/>
             <div class="m-t-10">
-                <button @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="@(() => { param = 1; StateHasChanged(); })" type="submit" class="btn btn-outline-danger">Cancel</button>
+                <button @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="@(() => { param = 1; })" type="submit" class="btn btn-outline-danger">Cancel</button>
             </div>
         </div>
     }
@@ -102,7 +102,20 @@
     </div>
 </EditForm>
 
-
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Employee edit</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            @ErrorMessage
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
 
 @code {
@@ -110,61 +123,145 @@
     [Parameter]
     public FileResponse File { get; set; }
 
+    public FileObjectResponse fileTmp = new FileObjectResponse();
+    string size;
+    public Modal modalRef { get; set; }
+
+    string ErrorMessage = "";
+    enum Size
+    {
+        KB = 1,
+        Mb,
+        Gb
+    }
+
     bool tmp = false;
     bool isLoading = false;
     int param = 1;
 
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+
+    private Task ShowModal(string message)
+    {
+        ErrorMessage = message;
+        return modalRef.Show();
+    }
+
     public string Href(string s)
     {
-        if (File.FileObject == null)
+        try
         {
-            Task.Run(GetFileObject);
+            if (File.FileObject == null)
+            {
+                //GetFileObject();
+                Console.WriteLine(this);
+                return "";
+            }
+            else if(s == "h")
+            {
+                return $"data:{File.FileObject.FileTypeMime};base64,{Convert.ToBase64String(File.FileObject.File)}";
+            }
+            else
+            {
+                return File.FileObject.Name;
+            }
+        }
+        catch (Exception e)
+        {
+            ShowModal(e.Message);
             return "";
-        }
-        else if(s == "h")
-        {
-            return $"data:{File.FileObject.FileTypeMime};base64,{Convert.ToBase64String(File.FileObject.File)}";
-        }
-        else
-        {
-            return File.FileObject.Name;
         }
     }
 
     protected async Task OnChange(FileChangedEventArgs e)
     {
-        long maxFileSize = 1024 * 1024 * 100;
-
-        foreach (var file in e.Files)
+        try
         {
-            using var fileContent = file.OpenReadStream(maxFileSize);
-            using var ms = new MemoryStream();
-            await fileContent.CopyToAsync(ms);
+            long maxFileSize = 1024 * 1024 * 100;
+
+            foreach (var file in e.Files)
+            {
+                size = ConvertingValueFromBytes(file.Size, 0);
+                using var fileContent = file.OpenReadStream(maxFileSize);
+                using var ms = new MemoryStream();
+                await fileContent.CopyToAsync(ms);
 
            
-            File.FileObject = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
+                fileTmp = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
 
-            if (File.FileObject == null)
-            {
-                throw new Exception("Mutable object not found");
+                if (File.FileObject == null)
+                {
+                    throw new Exception("Mutable object not found");
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            ShowModal(ex.Message); 
         }
     }
 
     private async Task PutFileObject()
     {
-        isLoading = true;
-        File.LastUpDate = DateTime.Now;
-        var statusInfo1 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FileDescription/{File.Id}", File);
-        var statusInfo2 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{File.Id}", File.FileObject);
-        await Task.Delay(1000);
-        isLoading = false;
+        try
+        {
+            isLoading = true;
+            File.LastUpDate = DateTime.Now;
+
+            if (fileTmp == null)
+            {
+                fileTmp = File.FileObject;
+            }
+
+            var statusInfo2 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{File.Id}", fileTmp);
+            if (!statusInfo2.IsSuccessStatusCode)
+            {
+                await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{File.Id}");
+                throw new Exception("Error - 500. Internal Server Error - Put");
+            }
+            param = 1;
+            File.Size = size;
+            var statusInfo1 = await Http.PutAsJsonAsync($"https://localhost:44339/api/FileDescription/{File.Id}", File);
+            if (!statusInfo1.IsSuccessStatusCode)
+            {
+                throw new Exception("Error - 500. Internal Server Error - Put");
+            }
+
+            
+            File.FileObject = fileTmp;
+            await Task.Delay(1000);
+            isLoading = false;
+        }
+        catch (Exception e)
+        {
+            ShowModal(e.Message);
+        }
+        
     }
 
     private async Task GetFileObject()
     {
-        var fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{File.Id}");
+        FileObjectResponse fileObject = new FileObjectResponse();
+        if (File.Id != Guid.Empty)
+        {
+            fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{File.Id}");
+        }
         File.FileObject = fileObject;
         StateHasChanged();
+    }
+
+    string ConvertingValueFromBytes(double size, int i)
+    {
+        if (size / 1024 > 1)
+        {
+            return ConvertingValueFromBytes(size / 1024, ++i);
+        }
+        else
+        {
+            return $"{Math.Round(size, 2)} {(Size)i}";
+        }
     }
 }
