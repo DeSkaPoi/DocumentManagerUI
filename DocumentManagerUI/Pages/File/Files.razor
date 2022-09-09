@@ -57,7 +57,7 @@
     <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
         <ModalHeader>
             <ModalTitle>Edit File</ModalTitle>
-            <CloseButton Clicked="HideChangeModal" />
+            <CloseButton/>
         </ModalHeader>
         <ModalBody>
             <EditFileForm File="file"></EditFileForm>
@@ -69,7 +69,7 @@
     <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
         <ModalHeader>
             <ModalTitle>Create File</ModalTitle>
-            <CloseButton Clicked="HideModal"/>
+            <CloseButton/>
         </ModalHeader>
         <ModalBody>
             <CreateFileForm File="file" IdDocument="@IdDocument"></CreateFileForm>
@@ -81,7 +81,7 @@
     <ModalContent Centered>
         <ModalHeader>
             <ModalTitle>Are you sure?</ModalTitle>
-            <CloseButton Clicked="HideModalDel"/>
+            <CloseButton/>
         </ModalHeader>
         <ModalFooter>
             <Button Color="Color.Danger" Clicked="@(() => {  return DeleteFile(); })">Yes, delete</Button>
