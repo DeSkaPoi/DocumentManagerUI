@@ -107,6 +107,10 @@
 
     [Parameter]
     public FileResponse File { get; set; }
+    
+    [Parameter]
+    public string IdDocument { get; set; }
+    
     public Modal modalRef { get; set; }
 
     bool isLoading = false;
@@ -177,8 +181,9 @@
     {
         try
         {
-            this.File.CreationTime = DateTime.Now;
-            this.File.LastUpDate = DateTime.Now;
+            File.CreationTime = DateTime.Now;
+            File.LastUpDate = DateTime.Now;
+            File.DocumentId = Guid.Parse(IdDocument);
             var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
 
             if (!response.IsSuccessStatusCode)

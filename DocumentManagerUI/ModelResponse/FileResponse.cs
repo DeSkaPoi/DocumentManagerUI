@@ -6,6 +6,7 @@ namespace DocumentManagerUI.ModelResponse
     public class FileResponse
     {
         public Guid Id { get; set; }
+        public Guid DocumentId { get; set; }
         public string Title { get; set; }
         public string Format { get; set; }
         public string KeyWords { get; set; }
