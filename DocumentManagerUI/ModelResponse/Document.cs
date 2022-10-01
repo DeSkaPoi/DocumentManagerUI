@@ -11,7 +11,6 @@ namespace DocumentManagerUI.ModelResponse
         [Required]
         [StringLength(20, ErrorMessage = "Name is too long (>25).")]
         public string Title { get; set; }
-        [StringLength(50, ErrorMessage = "Name is too long (>50).")]
         public string Content { get; set; } 
         public string Description { get; set; }
         public DateTime CreationTime { get; set; }

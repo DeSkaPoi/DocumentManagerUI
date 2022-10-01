@@ -1,0 +1,220 @@
+﻿@using System.IO
+@using System.Text.Json
+@using System.Net.Http
+@inject HttpClient Http
+@using System.Net.Http.Json
+@using DocumentManagerUI.ModelResponse
+@using Microsoft.JSInterop
+
+
+<div class="col-12 dp-ib">
+    <div class="offset-md-10 py-2">
+        <button @onclick="@(() => { ShowModal(new FileResponse());})" type="button" class="btn btn-outline-dark">
+            <div class="plus-square-fill.svg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-plus-lg" viewBox="0 1 16 16">
+                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                </svg>
+                Create
+            </div>
+        </button>
+    </div>
+</div>
+
+
+<div id="main-content" class="file_manager">
+    <div class="container">
+        <div class="row clearfix">
+
+            @foreach(var file in fileList)
+            {
+                <div class="col-2-5">
+                    <div class="file">
+                        <a @onclick="@(() => { ShowChangeModal(file);})" type="button" class="btn btn-r btn-light">
+                            <div class="hover">
+                                <buuttom @onclick:stopPropagation="true" @onclick="@(() => { ShowModalDel(file); })"  class="btn btn-sm btn-icon btn-outline-danger">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                                    </svg>
+                                </buuttom>
+                            </div>
+                            <div >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                                    <path stroke="white" stroke-width="0.4px" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0  0 1-1V4.5h-2z"/>
+                                </svg>
+                            </div>
+                            <div class="file-name">
+                                <p class="m-b-5 text-muted name-file">@file.Title</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<Modal @ref="modalChangeRef" Closed="HideChangeModal">
+    <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>Edit File</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <EditFileForm File="file"></EditFileForm>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+<Modal @ref="modalCreateRef" Closed="HideModal">
+    <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>Create File</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <CreateFileForm File="file" IdDocument="@IdDocument"></CreateFileForm>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+<Modal @ref="modalDelRef" Closed="HideModalDel">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Are you sure?</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalFooter>
+            <Button Color="Color.Danger" Clicked="@(() => {  return DeleteFile(); })">Yes, delete</Button>
+            <Button Color="Color.Secondary" Clicked="@HideModalDel">No, leave the file </Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+
+    [Parameter]
+    public string IdDocument { get; set; }
+
+    string fileUrl = "";
+    private int maxAllowedFiles = 3;
+
+    List<FileResponse> fileList = new();
+    FileListResponse payloadFileList = new FileListResponse();
+
+    FileResponse file = new FileResponse();
+    FileObjectResponse payloadFile = new();
+    
+    MultipartFormDataContent content = new MultipartFormDataContent();
+    public Modal modalCreateRef { get; set; }
+    public Modal modalChangeRef { get; set; }
+    public Modal modalDelRef { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (fileList == null)
+        {
+            fileList = new();
+        }
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");    
+            fileList.Add(fileOb);
+        }
+        int k = 0;
+    }
+
+    private async Task HideModal()
+    {
+        await modalCreateRef.Hide();
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}"); 
+            fileList.Add(fileOb);
+        }
+        StateHasChanged();
+    }
+
+    private async Task ShowModal(FileResponse file)
+    {
+        this.file = file;
+        await modalCreateRef.Show();
+    }
+
+    private async Task HideChangeModal()
+    {
+        await modalChangeRef.Hide();
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");    
+            fileList.Add(fileOb);
+        }
+        StateHasChanged();
+    }
+
+    private async Task ShowChangeModal(FileResponse file)
+    {
+        var tmpFile= await GetFileObject(file.Id);
+        this.file = tmpFile;
+        await modalChangeRef.Show();
+    }
+
+    private Task ShowModalDel(FileResponse file)
+    {
+        this.file = file;
+        return modalDelRef.Show();
+    }
+
+    private async Task HideModalDel()
+    {
+        await modalDelRef.Hide();
+        //this.file = new FileResponse();
+        StateHasChanged();
+    }
+
+    private async Task DeleteFile()
+    {
+        await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{file.Id}");
+        await Http.DeleteAsync($"https://localhost:5001/api/DocumentFiles/{IdDocument}/{file.Id}");
+    
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Files)
+        {
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");
+            fileList.Add(fileOb);
+        }
+        HideModalDel();
+    }
+
+    private async Task OnInputFileObjectChange(InputFileChangeEventArgs e)
+    {
+        long maxFileSize = 1024 * 1024 * 100;
+
+        foreach (var file in e.GetMultipleFiles(1))
+        {
+            using var fileContent = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+            if (payloadFile == null)
+            {
+                throw new Exception("Mutable object not found");
+            }
+            payloadFile = new FileObjectResponse(file.Name, ms.ToArray(), file.ContentType);
+        }
+    }
+
+    private async Task<FileResponse> GetFileObject(Guid Id)
+    {
+        var file = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{Id}");
+        file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
+        return file;
+    }
+}
+

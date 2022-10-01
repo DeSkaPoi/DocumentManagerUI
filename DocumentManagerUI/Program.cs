@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
+using Blazorise.RichTextEdit;
 
 namespace DocumentManagerUI
 {
@@ -25,7 +26,10 @@ namespace DocumentManagerUI
                })
                .AddFontAwesomeIcons()
                .AddBootstrapProviders()
+               .AddBlazorise()
+               .AddBlazoriseRichTextEdit()
                .AddBootstrapComponents();
+
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
