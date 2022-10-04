@@ -9,64 +9,58 @@
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components.Web
 @inject IJSRuntime jsRuntime
+@using System.Drawing
 
 
-<EditForm Model="@File" OnValidSubmit="@PostFileObject">
+<EditForm Model="@Picture" OnValidSubmit="@PostPictureObject">
     <DataAnnotationsValidator />
     <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
     <div class="col-12 Foorm">
         <label class="form-label">Title</label>
-        <input @bind="File.Title" type="text" class="form-control" id="inputAddress" placeholder="Title" />
+        <input @bind="Picture.Title" type="text" class="form-control" id="inputAddress" placeholder="Title" />
     </div>
 
     <div class="col-12 py-2 Foorm">
         <label class="form-label">Format</label>
-        <input @bind="File.Format" type="text" class="form-control" id="inputAddress2" placeholder="Format" />
-    </div>
-    
-    <div class="col-12 py-2 px-0 py-0 Foorm">
-        <label class="form-label col-12">KeyWords</label>
-        <div class="col-12 input-group">
-            <input @bind="File.KeyWords" type="text" class="form-control" aria-label="KeyWords" placeholder="KeyWords"></input>
-        </div>
-    </div>
-
-    <div class="col-12 py-2 px-0 py-0 Foorm">
-        <label class="form-label col-12">Description</label>
-        <div class="col-12 input-group">
-            <textarea @bind="File.Description" type="text" class="form-control" aria-label="Description" placeholder="Description"></textarea>
-        </div>
-    </div>
-     
-    <div class="col-12 py-2 px-0 py-0 Foorm">
-        <label class="form-label col-12">ContentType</label>
-        <div class="col-12 input-group">
-            <input @bind="File.ContentType" type="text" class="form-control" aria-label="ContentType" placeholder="ContentType"></input>
-        </div>
-    </div>
-    
-    <div class="col-12 py-2 px-0 py-0 Foorm">
-        <label class="form-label col-12">Content</label>
-        <div class="col-12 input-group">
-            <input @bind="File.Content" type="text" class="form-control" aria-label="Content" placeholder="Content"></input>
-        </div>
-    </div>
-    
-    <div class="col-md-6 py-2 Foorm">
-        <label class="form-label">CreationTime</label>
-        <input @bind="File.CreationTime" type="datetime" disabled="disabled" class="form-control" id="inputCity" />
-    </div>
-    
-    <div class="col-md-6 py-2 Foorm1">
-        <label class="form-label">LastUpdate</label>
-        <input @bind="File.LastUpDate" type="datetime" disabled="disabled" class="form-control" id="inputZip" />
+        <input @bind="Picture.Format" type="text" class="form-control" id="inputAddress2" placeholder="Format" />
     </div>
     
     <div class="col-12 py-2 px-0 py-0 Foorm">
         <label class="form-label col-12">Size</label>
         <div class="col-12 input-group">
-            <input @bind="File.Size" type="text" disabled="disabled" class="form-control" aria-label="Size" placeholder="Size"></input>
+            <input @bind="Picture.Size" type="text" class="form-control" aria-label="KeyWords" placeholder="Size"></input>
         </div>
+    </div>
+
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">ResolutionX</label>
+        <div class="col-12 input-group">
+            <textarea @bind="Picture.ResolutionX" type="text" class="form-control" aria-label="Description" placeholder="ResolutionX"></textarea>
+        </div>
+    </div>
+     
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">ResolutionY</label>
+        <div class="col-12 input-group">
+            <input @bind="Picture.ResolutionY" type="text" class="form-control" aria-label="ContentType" placeholder="ResolutionY"></input>
+        </div>
+    </div>
+    
+    <div class="col-12 py-2 px-0 py-0 Foorm">
+        <label class="form-label col-12">Description</label>
+        <div class="col-12 input-group">
+            <input @bind="Picture.Description" type="text" class="form-control" aria-label="Content" placeholder="Description"></input>
+        </div>
+    </div>
+    
+    <div class="col-md-6 py-2 Foorm">
+        <label class="form-label">CreationTime</label>
+        <input @bind="Picture.CreationTime" type="datetime" disabled="disabled" class="form-control" id="inputCity" />
+    </div>
+    
+    <div class="col-md-6 py-2 Foorm1">
+        <label class="form-label">LastUpdate</label>
+        <input @bind="Picture.LastUpDate" type="datetime" disabled="disabled" class="form-control" id="inputZip" />
     </div>
     
     <div id="Butr" class="col-md-12 py-2 Foorm m-b m-t-10">
@@ -74,7 +68,7 @@
     </div>
 
     <div class="subButtom Foorm py-2 marginSave">
-        <Button id="12" Type="ButtonType.Submit" Color="Color.Dark" Loading="isLoading">
+        <Button id="12" Type="ButtonType.Submit" Color="Blazorise.Color.Dark" Loading="isLoading">
             <LoadingTemplate>
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 Saving...
@@ -97,7 +91,7 @@
             @ErrorMessage
         </ModalBody>
         <ModalFooter>
-            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+            <Button Color="Blazorise.Color.Secondary" Clicked="@HideModal">Close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
@@ -110,7 +104,7 @@
     public string IdDocument { get; set; }
 
     [Parameter]
-    public FileResponse File { get; set; }
+    public PictureResponse Picture { get; set; }
     
     public Modal modalRef { get; set; }
 
@@ -124,10 +118,7 @@
         Gb
     }
 
-    async Task OnProgressed(FileProgressedEventArgs e)
-    {
-        Console.WriteLine($"File: {e.File.Name} Progress: {e.Percentage}");
-    }
+  
 
     private Task HideModal()
     {
@@ -153,10 +144,11 @@
                     var content = file.OpenReadStream(10240000);
                     await content.CopyToAsync(stream);
                     stream.Seek(0, SeekOrigin.Begin);
-                    File.Size = ConvertingValueFromBytes(file.Size, 0);
-                    File.FileObject = new FileObjectResponse(file.Name, stream.ToArray(), file.ContentType);
 
-                    if (File.FileObject == null)
+                    Picture.Size = ConvertingValueFromBytes(file.Size, 0);
+                    Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType);
+
+                    if (Picture.PictureObject == null)
                     {
                         throw new Exception("Mutable object not found");
                     }
@@ -174,18 +166,18 @@
         }
         catch (Exception ex)
         {
-            ShowModal(ex.Message);
+            ShowModal(ex.Message + "ssssss");
         }
         
     }
 
-    private async Task PostFileObject()
+    private async Task PostPictureObject()
     {
         try
         {
-            File.CreationTime = DateTime.Now;
-            File.LastUpDate = DateTime.Now;
-            var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
+            Picture.CreationTime = DateTime.Now;
+            Picture.LastUpDate = DateTime.Now;
+            var response = await Http.PostAsJsonAsync($"https://localhost:44318/api/PictureDescription/", Picture);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -194,14 +186,14 @@
 
             var idfile = await response.Content.ReadAsStringAsync();
             idfile = idfile.Trim('"');
-            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", File.FileObject);
+            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44318/api/PicturePayload/picture/{idfile}", Picture.PictureObject);
             if (!statusInfo.IsSuccessStatusCode)
             {
-                await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{idfile}");
+                await Http.DeleteAsync($"https://localhost:44318/api/FileDescription/{idfile}");
                 throw new Exception("Error - 500. Internal Server Error - Post");
             }
 
-            var response2 = await Http.PostAsJsonAsync($"https://localhost:5001/api/DocumentFiles/{IdDocument}/{idfile}", new object());
+            var response2 = await Http.PostAsJsonAsync($"https://localhost:5001/api/DocumentPictures/{IdDocument}/{idfile}", new object());
             if (!response2.IsSuccessStatusCode)
             {
                 throw new Exception("Error - 500. Internal Server Error - Post");
@@ -210,7 +202,7 @@
         }
         catch (Exception e)
         {
-            ShowModal(e.Message);
+            ShowModal(e.Message + "wwww");
         }
         
     }
