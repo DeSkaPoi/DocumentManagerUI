@@ -6,6 +6,7 @@
 @using DocumentManagerUI.ModelResponse
 @using global::Picture.Infrastructure.DBModel
 @using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 
 
 <div class="col-12 dp-ib">
@@ -35,17 +36,23 @@
                                 <buuttom @onclick:stopPropagation="true" @onclick="@(() => { ShowModalDel(file); })" class="btn btn-sm btn-icon btn-outline-danger">
 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
                                     </svg>
-
                                 </buuttom>
                             </div>
-                            <div >
-                                
-
-                                <img class="fit-picture" src="@scaleImage.Find(si => si.Id == file.Id).ScaleImage">
-
+                            
+                            <div class="hover" style="margin-top: 28px;">
+                                <buuttom @onclick:stopPropagation="true" @onclick="@(() => { CopyTextToClipboard(file.Id); })" class="btn btn-sm btn-icon btn-outline-light" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-files" viewBox="0 0 16 16">
+                                        <path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
+                                    </svg>
+                                </buuttom>
                             </div>
+
+                            <div >
+                                <img class="fit-picture" src="@scaleImage.Find(si => si.Id == file.Id).ScaleImage">
+                            </div>
+
                             <div class="file-name">
                                 <p class="m-b-5 text-muted name-file">@file.Title</p>
                             </div>
@@ -99,6 +106,8 @@
     [Parameter]
     public string IdDocument { get; set; }
 
+    string param = "";
+
     string fileUrl = "";
     private int maxAllowedFiles = 3;
 
@@ -134,14 +143,7 @@
     private async Task HideModal()
     {
         await modalCreateRef.Hide();
-        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
-        fileList.Clear();
-        foreach (var file in doc.Files)
-        {
-            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.FileId}");
-            fileList.Add(fileOb);
-        }
-
+        await ResetCollection();
         StateHasChanged();
     }
 
@@ -154,14 +156,7 @@
     private async Task HideChangeModal()
     {
         await modalChangeRef.Hide();
-        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
-        fileList.Clear();
-        foreach (var file in doc.Pictures)
-        {
-            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.PictureId}");
-            fileList.Add(fileOb);
-        }
-        scaleImage = await Http.GetFromJsonAsync<List<ScaleImageResponse>>($"https://localhost:44318/api/PicturePayload/scale");
+        await ResetCollection();
         StateHasChanged();
     }
 
@@ -176,6 +171,14 @@
     {
         this.file = file;
         return modalDelRef.Show();
+    }
+
+    [Parameter] public string Text { get; set; }
+
+    private async Task CopyTextToClipboard(Guid id)
+    {
+        await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", id);
+        param = id.ToString();
     }
 
     private async Task HideModalDel()
@@ -198,7 +201,7 @@
             fileList.Add(fileOb);
         }
         scaleImage = await Http.GetFromJsonAsync<List<ScaleImageResponse>>($"https://localhost:44318/api/PicturePayload/scale");
-        HideModalDel();
+        await HideModalDel();
         StateHasChanged();
     }
 
@@ -218,6 +221,19 @@
             }
             payloadFile = new PictureObjectResponse(file.Name, ms.ToArray(), file.ContentType);
         }
+    }
+
+    private async Task ResetCollection()
+    {
+        await modalChangeRef.Hide();
+        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
+        fileList.Clear();
+        foreach (var file in doc.Pictures)
+        {
+            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.PictureId}");
+            fileList.Add(fileOb);
+        }
+        scaleImage = await Http.GetFromJsonAsync<List<ScaleImageResponse>>($"https://localhost:44318/api/PicturePayload/scale");
     }
 
     private async Task<PictureResponse> GetFileObject(Guid Id)

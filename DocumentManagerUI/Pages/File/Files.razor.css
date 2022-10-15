@@ -138,3 +138,14 @@ a:hover {
 .modal-dialog-scrollable {
     overflow-x: clip;
 }
+
+.btn-outline-light {
+    color: #f8f9fa;
+    border-color: rgb(0 0 0 / 0%);
+}
+
+.btn-outline-gray {
+    color: #6c757d;
+    border-color: rgb(0 0 0 / 0%);
+}
+

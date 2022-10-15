@@ -105,8 +105,18 @@ a:hover {
     border-color: #ffffff;
 }
 
+.btn-outline-darks {
+    color: #343a40;
+    border-color: rgb(0 0 0 / 0%);
+}
+
 .btn-outline-danger {
     color: #dc3545;
+    border-color: rgb(0 0 0 / 0%);
+}
+
+.btn-outline-light {
+    color: #f8f9fa;
     border-color: rgb(0 0 0 / 0%);
 }
 
@@ -118,8 +128,8 @@ a:hover {
 }
 
 .col-2-5 {
-    flex: 0 0 16.666667%;
-    max-width: 16.666667%;
+    flex: inherit;
+    max-width: fit-content;
     min-width: 0%;
     padding: 0px;
     margin-right: 10px;
@@ -138,3 +148,4 @@ a:hover {
 .modal-dialog-scrollable {
     overflow-x: clip;
 }
+

@@ -33,16 +33,16 @@
     </div>
      
     <div class="col-12 py-2 px-0 py-0 Foorm">
-        <label class="form-label col-12">ContentType</label>
+        <label class="form-label col-12">ResolutionX</label>
         <div class="col-12 input-group">
-            <input @bind="Picture.ResolutionX" type="text" class="form-control" aria-label="ContentType" placeholder="ContentType"></input>
+            <input @bind="Picture.ResolutionX" type="text" class="form-control" aria-label="ContentType" placeholder="ResolutionX"></input>
         </div>
     </div>
     
     <div class="col-12 py-2 px-0 py-0 Foorm">
-        <label class="form-label col-12">Content</label>
+        <label class="form-label col-12">ResolutionY</label>
         <div class="col-12 input-group">
-            <input @bind="Picture.ResolutionY" type="text" class="form-control" aria-label="Content" placeholder="Content"></input>
+            <input @bind="Picture.ResolutionY" type="text" class="form-control" aria-label="Content" placeholder="ResolutionY"></input>
         </div>
     </div>
     
@@ -177,25 +177,25 @@
         {
             long maxFileSize = 1024 * 1024 * 100;
 
-            foreach (var file in e.GetMultipleFiles(1))
+            foreach (var file in e.GetMultipleFiles(3))
             {
-
-                using (var stream = new MemoryStream())
-                {
-                    var content = file.OpenReadStream(10240000);
-                    await content.CopyToAsync(stream);
-                    stream.Seek(0, SeekOrigin.Begin);
-                    Picture.Size = ConvertingValueFromBytes(file.Size, 0);
-
-                    Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType);
-
-                    if (Picture.PictureObject == null)
+                
+                    using (var stream = new MemoryStream())
                     {
-                        throw new Exception("Mutable object not found");
-                    }
-                }
+                        var content = file.OpenReadStream(10240000);
+                        await content.CopyToAsync(stream);
+                        stream.Seek(0, SeekOrigin.Begin);
+                        Picture.Size = ConvertingValueFromBytes(file.Size, 0);
 
-                /*size = ConvertingValueFromBytes(file.Size, 0);
+                        Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType);
+
+                        if (Picture.PictureObject == null)
+                        {
+                            throw new Exception("Mutable object not found");
+                        }
+                    }
+                
+    /*size = ConvertingValueFromBytes(file.Size, 0);
                 using var fileContent = file.OpenReadStream(maxFileSize);
                 using var ms = new MemoryStream();
                 await fileContent.CopyToAsync(ms);
@@ -222,10 +222,7 @@
             isLoading = true;
             Picture.LastUpDate = DateTime.Now;
 
-            if (fileTmp.Picture == null)
-            {
-                fileTmp = Picture.PictureObject;
-            }
+            fileTmp = Picture.PictureObject;
 
             var statusInfo2 = await Http.PutAsJsonAsync($"https://localhost:44318/api/PicturePayload/picture/{Picture.Id}", fileTmp);
             if (!statusInfo2.IsSuccessStatusCode)

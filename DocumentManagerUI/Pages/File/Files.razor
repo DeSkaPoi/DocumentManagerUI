@@ -5,6 +5,7 @@
 @using System.Net.Http.Json
 @using DocumentManagerUI.ModelResponse
 @using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 
 
 <div class="col-12 dp-ib">
@@ -37,6 +38,16 @@
                                     </svg>
                                 </buuttom>
                             </div>
+                            
+                            <div class="hover" style="margin-top: 28px;">
+                                <buuttom @onclick:stopPropagation="true" @onclick="@(() => { CopyTextToClipboard(file.Id); })" class="btn btn-sm btn-icon btn-outline-dark" style="border-color: rgb(0 0 0 / 0%);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-files" viewBox="0 0 16 16">
+                                        <path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
+                                    </svg>
+                                </buuttom>
+                            </div>
+
+
                             <div >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
                                     <path stroke="white" stroke-width="0.4px" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0  0 1-1V4.5h-2z"/>
@@ -123,6 +134,14 @@
             fileList.Add(fileOb);
         }
         int k = 0;
+    }
+    string param = "";
+    [Parameter] public string Text { get; set; }
+
+    private async Task CopyTextToClipboard(Guid id)
+    {
+        await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", id);
+        param = id.ToString();
     }
 
     private async Task HideModal()
