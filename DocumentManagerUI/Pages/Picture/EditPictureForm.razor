@@ -157,7 +157,7 @@
             }
             else if(s == "h")
             {
-                return $"data:{Picture.PictureObject.FileTypeMime};base64,{Convert.ToBase64String(Picture.PictureObject.Picture)}";
+                return $"data:{Picture.PictureObject.PictureTypeMime};base64,{Convert.ToBase64String(Picture.PictureObject.Picture)}";
             }
             else
             {
@@ -187,7 +187,7 @@
                         stream.Seek(0, SeekOrigin.Begin);
                         Picture.Size = ConvertingValueFromBytes(file.Size, 0);
 
-                        Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType);
+                        Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType, null);
 
                         if (Picture.PictureObject == null)
                         {

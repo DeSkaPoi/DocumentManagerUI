@@ -6,17 +6,19 @@ namespace DocumentManagerUI.ModelResponse
     {
         public string Name { get; set; }
         public byte[] Picture { get; set; }
-        public string FileTypeMime { get; set; }
+        public byte[] PictureScale { get; set; }
+        public string PictureTypeMime { get; set; }
 
         public PictureObjectResponse()
         {
         }
 
-        public PictureObjectResponse(string name, byte[] picture,  string fileTypeMime)
+        public PictureObjectResponse(string name, byte[] picture,  string pictureTypeMime, byte[] pictureScale)
         {
             Name = name;
             Picture = picture;
-            FileTypeMime = fileTypeMime;
+            PictureTypeMime = pictureTypeMime;
+            PictureScale = pictureScale;
         }
     }
 }

@@ -146,7 +146,7 @@
                     stream.Seek(0, SeekOrigin.Begin);
 
                     Picture.Size = ConvertingValueFromBytes(file.Size, 0);
-                    Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType);
+                    Picture.PictureObject = new PictureObjectResponse(file.Name, stream.ToArray(), file.ContentType, null);
 
                     if (Picture.PictureObject == null)
                     {
@@ -173,6 +173,7 @@
 
     private async Task PostPictureObject()
     {
+        isLoading = true;
         try
         {
             Picture.CreationTime = DateTime.Now;
@@ -204,7 +205,8 @@
         {
             ShowModal(e.Message + "wwww");
         }
-        
+        await Task.Delay(1000);
+        isLoading = false;
     }
 
     string ConvertingValueFromBytes(double size, int i)

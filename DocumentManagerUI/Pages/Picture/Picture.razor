@@ -50,7 +50,7 @@
                             </div>
 
                             <div >
-                                <img class="fit-picture" src="@scaleImage.Find(si => si.Id == file.Id).ScaleImage">
+                                <img class="fit-picture" src="@($"data:{file.PictureObject.PictureTypeMime};base64,{Convert.ToBase64String(file.PictureObject.PictureScale)}")">
                             </div>
 
                             <div class="file-name">
@@ -63,6 +63,8 @@
         </div>
     </div>
 </div>
+
+
 
 <Modal @ref="modalChangeRef" Closed="HideChangeModal">
     <ModalContent Centered Scrollable="true" Size="ModalSize.Large">
@@ -129,15 +131,8 @@
             {
                 fileList = new();
             }
-            var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
-            fileList.Clear();
-            foreach (var file in doc.Pictures)
-            {
-                var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.PictureId}");
-                fileList.Add(fileOb);
-            }
-            scaleImage = await Http.GetFromJsonAsync<List<ScaleImageResponse>>($"https://localhost:44318/api/PicturePayload/scale");
-            int k = 0;
+        ResetCollection();
+        StateHasChanged();
     }
 
     private async Task HideModal()
@@ -192,48 +187,25 @@
     {
         await Http.DeleteAsync($"https://localhost:44318/api/PictureDescription/{file.Id}");
         await Http.DeleteAsync($"https://localhost:5001/api/DocumentPictures/{IdDocument}/{file.Id}");
-    
-        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
-        fileList.Clear();
-        foreach (var file in doc.Pictures)
-        {
-            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.PictureId}");
-            fileList.Add(fileOb);
-        }
-        scaleImage = await Http.GetFromJsonAsync<List<ScaleImageResponse>>($"https://localhost:44318/api/PicturePayload/scale");
+
+        ResetCollection();
         await HideModalDel();
         StateHasChanged();
     }
 
-    private async Task OnInputFileObjectChange(InputFileChangeEventArgs e)
-    {
-        long maxFileSize = 1024 * 1024 * 100;
-
-        foreach (var file in e.GetMultipleFiles(1))
-        {
-            using var fileContent = file.OpenReadStream(maxFileSize);
-            using var ms = new MemoryStream();
-            await fileContent.CopyToAsync(ms);
-
-            if (payloadFile == null)
-            {
-                throw new Exception("Mutable object not found");
-            }
-            payloadFile = new PictureObjectResponse(file.Name, ms.ToArray(), file.ContentType);
-        }
-    }
-
     private async Task ResetCollection()
     {
-        await modalChangeRef.Hide();
         var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
         fileList.Clear();
         foreach (var file in doc.Pictures)
         {
             var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.PictureId}");
+            fileOb.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:44318/api/PicturePayload/scale/{fileOb.Id}");
             fileList.Add(fileOb);
+            
         }
-        scaleImage = await Http.GetFromJsonAsync<List<ScaleImageResponse>>($"https://localhost:44318/api/PicturePayload/scale");
+        StateHasChanged();
+        
     }
 
     private async Task<PictureResponse> GetFileObject(Guid Id)
