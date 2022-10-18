@@ -185,7 +185,7 @@
         {
             File.CreationTime = DateTime.Now;
             File.LastUpDate = DateTime.Now;
-            var response = await Http.PostAsJsonAsync($"https://localhost:44339/api/FileDescription/", File);
+            var response = await Http.PostAsJsonAsync($"https://localhost:5006/api/FileDescription/", File);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -194,10 +194,10 @@
 
             var idfile = await response.Content.ReadAsStringAsync();
             idfile = idfile.Trim('"');
-            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44339/api/FilePayload/file/{idfile}", File.FileObject);
+            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:5006/api/FilePayload/file/{idfile}", File.FileObject);
             if (!statusInfo.IsSuccessStatusCode)
             {
-                await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{idfile}");
+                await Http.DeleteAsync($"https://localhost:5006/api/FileDescription/{idfile}");
                 throw new Exception("Error - 500. Internal Server Error - Post");
             }
 

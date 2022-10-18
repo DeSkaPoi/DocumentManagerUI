@@ -185,7 +185,7 @@
 
     private async Task DeleteFile()
     {
-        await Http.DeleteAsync($"https://localhost:44318/api/PictureDescription/{file.Id}");
+        await Http.DeleteAsync($"https://localhost:5003/api/PictureDescription/{file.Id}");
         await Http.DeleteAsync($"https://localhost:5001/api/DocumentPictures/{IdDocument}/{file.Id}");
 
         ResetCollection();
@@ -199,8 +199,8 @@
         fileList.Clear();
         foreach (var file in doc.Pictures)
         {
-            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{file.PictureId}");
-            fileOb.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:44318/api/PicturePayload/scale/{fileOb.Id}");
+            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:5003/api/PictureDescription/{file.PictureId}");
+            fileOb.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:5003/api/PicturePayload/scale/{fileOb.Id}");
             fileList.Add(fileOb);
             
         }
@@ -210,8 +210,8 @@
 
     private async Task<PictureResponse> GetFileObject(Guid Id)
     {
-        var file = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:44318/api/PictureDescription/{Id}");
-        file.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:44318/api/PicturePayload/picture/{Id}");
+        var file = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:5003/api/PictureDescription/{Id}");
+        file.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:5003/api/PicturePayload/picture/{Id}");
         return file;
     }
 }

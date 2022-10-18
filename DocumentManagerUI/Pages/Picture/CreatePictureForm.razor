@@ -178,7 +178,7 @@
         {
             Picture.CreationTime = DateTime.Now;
             Picture.LastUpDate = DateTime.Now;
-            var response = await Http.PostAsJsonAsync($"https://localhost:44318/api/PictureDescription/", Picture);
+            var response = await Http.PostAsJsonAsync($"https://localhost:5003/api/PictureDescription/", Picture);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -187,10 +187,10 @@
 
             var idfile = await response.Content.ReadAsStringAsync();
             idfile = idfile.Trim('"');
-            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:44318/api/PicturePayload/picture/{idfile}", Picture.PictureObject);
+            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:5003/api/PicturePayload/picture/{idfile}", Picture.PictureObject);
             if (!statusInfo.IsSuccessStatusCode)
             {
-                await Http.DeleteAsync($"https://localhost:44318/api/FileDescription/{idfile}");
+                await Http.DeleteAsync($"https://localhost:5003/api/FileDescription/{idfile}");
                 throw new Exception("Error - 500. Internal Server Error - Post");
             }
 

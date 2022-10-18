@@ -130,7 +130,7 @@
         fileList.Clear();
         foreach (var file in doc.Files)
         {
-            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");    
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:5006/api/FileDescription/{file.FileId}");    
             fileList.Add(fileOb);
         }
         int k = 0;
@@ -151,7 +151,7 @@
         fileList.Clear();
         foreach (var file in doc.Files)
         {
-            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}"); 
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:5006/api/FileDescription/{file.FileId}"); 
             fileList.Add(fileOb);
         }
         StateHasChanged();
@@ -170,7 +170,7 @@
         fileList.Clear();
         foreach (var file in doc.Files)
         {
-            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");    
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:5006/api/FileDescription/{file.FileId}");    
             fileList.Add(fileOb);
         }
         StateHasChanged();
@@ -198,14 +198,14 @@
 
     private async Task DeleteFile()
     {
-        await Http.DeleteAsync($"https://localhost:44339/api/FileDescription/{file.Id}");
+        await Http.DeleteAsync($"https://localhost:5006/api/FileDescription/{file.Id}");
         await Http.DeleteAsync($"https://localhost:5001/api/DocumentFiles/{IdDocument}/{file.Id}");
     
         var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentFiles/{IdDocument}");
         fileList.Clear();
         foreach (var file in doc.Files)
         {
-            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{file.FileId}");
+            var fileOb = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:5006/api/FileDescription/{file.FileId}");
             fileList.Add(fileOb);
         }
         HideModalDel();
@@ -231,8 +231,8 @@
 
     private async Task<FileResponse> GetFileObject(Guid Id)
     {
-        var file = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:44339/api/FileDescription/{Id}");
-        file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{Id}");
+        var file = await Http.GetFromJsonAsync<FileResponse>($"https://localhost:5006/api/FileDescription/{Id}");
+        file.FileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:5006/api/FilePayload/file/{Id}");
         return file;
     }
 }
