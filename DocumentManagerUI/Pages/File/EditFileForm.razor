@@ -262,7 +262,7 @@
         FileObjectResponse fileObject = new FileObjectResponse();
         if (File.Id != Guid.Empty)
         {
-            fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/file/{File.Id}");
+            fileObject = await Http.GetFromJsonAsync<FileObjectResponse>($"https://localhost:44339/api/FilePayload/client/{File.Id}");
         }
         File.FileObject = fileObject;
         StateHasChanged();

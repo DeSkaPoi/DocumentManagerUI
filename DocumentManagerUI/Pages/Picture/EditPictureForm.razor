@@ -250,17 +250,6 @@
         
     }
 
-    private async Task GetFileObject()
-    {
-        PictureObjectResponse fileObject = new PictureObjectResponse();
-        if (Picture.Id != Guid.Empty)
-        {
-            fileObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:44318/api/FilePayload/file/{Picture.Id}");
-        }
-        Picture.PictureObject = fileObject;
-        StateHasChanged();
-    }
-
     string ConvertingValueFromBytes(double size, int i)
     {
         if (size / 1024 > 1)
