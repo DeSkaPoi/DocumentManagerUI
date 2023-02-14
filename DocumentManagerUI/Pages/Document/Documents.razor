@@ -19,6 +19,7 @@
     <div class="col-10 py-2 Foorm">
         <label class="form-label">Content</label>
         <RichTextEdit @ref="richTextEditRef"
+                      ContentChanged="@OnContentChanged"
                       Theme="RichTextEditTheme.Snow"
                       PlaceHolder="Type your post here..."
                       ReadOnly="@readOnly"
@@ -123,6 +124,11 @@
         }
     }
 
+    public async Task OnContentChanged()
+    {
+        await richTextEditRef.SetHtmlAsync(document.Content);
+    }
+
     private Task HideModal()
     {
         return modalRef.Hide();
@@ -137,7 +143,8 @@
 
     private async Task HandleValidSubmit()
     {
-        document.Content = await richTextEditRef.GetTextAsync();
+        document.Content = await richTextEditRef.GetHtmlAsync();
+        
         string uri = string.Concat(BaseURI, IdDocument);
         try
         {
