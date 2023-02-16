@@ -131,7 +131,7 @@
             {
                 fileList = new();
             }
-        ResetCollection();
+        await ResetCollection();
         StateHasChanged();
     }
 
@@ -172,8 +172,11 @@
 
     private async Task CopyTextToClipboard(Guid id)
     {
-        await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", id);
-        param = id.ToString();
+        
+        var tmpFile = await GetFileObject(id);
+        var tmp = $"<img src=\"data:{tmpFile.PictureObject.PictureTypeMime};base64,{Convert.ToBase64String(tmpFile.PictureObject.PictureScale)}\">";
+        await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", tmp);
+        //param = id.ToString();
     }
 
     private async Task HideModalDel()
@@ -188,7 +191,7 @@
         await Http.DeleteAsync($"https://localhost:5003/api/PictureDescription/{file.Id}");
         await Http.DeleteAsync($"https://localhost:5001/api/DocumentPictures/{IdDocument}/{file.Id}");
 
-        ResetCollection();
+        await ResetCollection();
         await HideModalDel();
         StateHasChanged();
     }

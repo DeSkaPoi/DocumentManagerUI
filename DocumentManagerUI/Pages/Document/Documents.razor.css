@@ -14,3 +14,17 @@
 .subButtom {
     padding-top: 15px;
 }
+
+figure {
+    background: #5f6a72; /* Цвет фона */
+    padding: 10px; /* Поля вокруг */
+    display: block; /* Блочный элемент */
+    width: 150px; /* Ширина */
+    float: left; /* Блоки выстраиваются по горизонтали */
+    margin: 0 10px 10px 0; /* Отступы */
+    text-align: center; /* Выравнивание по центру */
+}
+
+figcaption {
+    color: #fff; /* Цвет текста */
+}

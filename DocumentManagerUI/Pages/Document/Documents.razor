@@ -7,10 +7,9 @@
 @using Blazorise.RichTextEdit
 @using DocumentManagerUI.ModelResponse
 
-
 <EditForm Model="@document" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
-    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
+    <Microsoft.AspNetCore.Components.Forms.ValidationSummary/>
     <div class="col-10 Foorm">
         <label class="form-label">Title</label>
         <input @bind="document.Title" type="text" class="form-control" id="inputAddress" placeholder="Название Документа" />
@@ -19,14 +18,14 @@
     <div class="col-10 py-2 Foorm">
         <label class="form-label">Content</label>
         <RichTextEdit @ref="richTextEditRef"
-                      ContentChanged="@OnContentChanged"
                       Theme="RichTextEditTheme.Snow"
                       PlaceHolder="Type your post here..."
                       ReadOnly="@readOnly"
                       SubmitOnEnter="false"
                       EnterPressed="@HandleValidSubmit"
+                      ContentChanged="@OnContentChanged"
                       ToolbarPosition="Placement.Top">
-            <Editor>@document.Content</Editor>
+            <Editor>@((MarkupString)document.Content)</Editor>
             <Toolbar>
                 <RichTextEditToolbarGroup>
                     <RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
@@ -94,6 +93,7 @@
     public string ErrorMessage { get; set; }
     public Modal modalRef { get; set; }
     private Document document = new();
+    MarkupString ms;
 
     protected override async Task OnInitializedAsync()
     {
@@ -116,17 +116,12 @@
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(payload);
                 throw new Exception(errorResponse.ErrorMessage);
             }
-
+            ms = new MarkupString(document.Content);
         }
         catch (Exception ex)
         {
             await ShowModal(ex.Message);
         }
-    }
-
-    public async Task OnContentChanged()
-    {
-        await richTextEditRef.SetHtmlAsync(document.Content);
     }
 
     private Task HideModal()
@@ -140,11 +135,38 @@
         return modalRef.Show();
     }
 
+    public async Task OnContentChanged()
+    {
+        try
+        {
+            document.Content = await richTextEditRef.GetHtmlAsync();
+
+            document.Content = document.Content.Replace("&lt;", "<");
+            document.Content = document.Content.Replace("&gt;", ">");
+            await richTextEditRef.SetHtmlAsync(document.Content);
+        }
+        catch
+        {
+            
+        }
+
+    }
 
     private async Task HandleValidSubmit()
     {
         document.Content = await richTextEditRef.GetHtmlAsync();
-        
+
+        document.Content = document.Content.Replace("&lt;", "<");
+        document.Content = document.Content.Replace("&gt;", ">");
+
+        var startIndex = document.Content.IndexOf("<img");
+        var endIndex = document.Content.IndexOf('>', startIndex);
+
+        var tmpStr = document.Content.Substring(startIndex, endIndex - startIndex+1);
+        var tmpStr2 = document.Content.Replace(tmpStr, "");
+
+        document.Content = $"<figure>{tmpStr}<figcaption>{tmpStr2}</figcaption></figure>";
+
         string uri = string.Concat(BaseURI, IdDocument);
         try
         {
