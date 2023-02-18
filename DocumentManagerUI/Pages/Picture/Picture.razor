@@ -31,7 +31,7 @@
             {
                 <div class="col-2-5">
                     <div class="file">
-                        <a @onclick="@(() => { ShowChangeModal(file);})" type="button" class="btn btn-r btn-light">
+                        <a @onclick="@(async() => { await ShowChangeModal(file);})" type="button" class="btn btn-r btn-light">
                             <div class="hover">
                                 <buuttom @onclick:stopPropagation="true" @onclick="@(() => { ShowModalDel(file); })" class="btn btn-sm btn-icon btn-outline-danger">
 
@@ -50,7 +50,7 @@
                             </div>
 
                             <div >
-                                <img class="fit-picture" src="@($"data:{file.PictureObject.PictureTypeMime};base64,{Convert.ToBase64String(file.PictureObject.PictureScale)}")">
+                                <img class="fit-picture" src="@($"data:{file.PictureObject.PictureTypeMime};base64,{Convert.ToBase64String(file.PictureObject.PictureScale)}")" width="180" height="100">
                             </div>
 
                             <div class="file-name">
@@ -85,7 +85,7 @@
             <CloseButton/>
         </ModalHeader>
         <ModalBody>
-            <CreatePictureForm Picture="file" IdDocument="@IdDocument"></CreatePictureForm>
+            <CreatePictureForm Picture="file" IdDocument="@IdDocument" DocumentManagerApi="@DocumentManagerApi" PictureManagersApi="@PictureManagersApi"></CreatePictureForm>
         </ModalBody>
     </ModalContent>
 </Modal>
@@ -107,6 +107,10 @@
 
     [Parameter]
     public string IdDocument { get; set; }
+    [Parameter]
+    public string DocumentManagerApi { get; set; }
+    [Parameter]
+    public string PictureManagersApi { get; set; }
 
     string param = "";
 
@@ -188,8 +192,8 @@
 
     private async Task DeleteFile()
     {
-        await Http.DeleteAsync($"https://localhost:5003/api/PictureDescription/{file.Id}");
-        await Http.DeleteAsync($"https://localhost:5001/api/DocumentPictures/{IdDocument}/{file.Id}");
+        await Http.DeleteAsync($"{PictureManagersApi}/PictureDescription/{file.Id}");
+        await Http.DeleteAsync($"{DocumentManagerApi}/DocumentPictures/{IdDocument}/{file.Id}");
 
         await ResetCollection();
         await HideModalDel();
@@ -198,12 +202,12 @@
 
     private async Task ResetCollection()
     {
-        var doc = await Http.GetFromJsonAsync<Document>($"https://localhost:5001/api/DocumentPictures/{IdDocument}");
+        var doc = await Http.GetFromJsonAsync<Document>($"{DocumentManagerApi}/DocumentPictures/{IdDocument}");
         fileList.Clear();
         foreach (var file in doc.Pictures)
         {
-            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:5003/api/PictureDescription/{file.PictureId}");
-            fileOb.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:5003/api/PicturePayload/scale/{fileOb.Id}");
+            var fileOb = await Http.GetFromJsonAsync<PictureResponse>($"{PictureManagersApi}/PictureDescription/{file.PictureId}");
+            fileOb.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"{PictureManagersApi}/PicturePayload/scale/{fileOb.Id}");
             fileList.Add(fileOb);
             
         }
@@ -213,8 +217,8 @@
 
     private async Task<PictureResponse> GetFileObject(Guid Id)
     {
-        var file = await Http.GetFromJsonAsync<PictureResponse>($"https://localhost:5003/api/PictureDescription/{Id}");
-        file.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"https://localhost:5003/api/PicturePayload/picture/{Id}");
+        var file = await Http.GetFromJsonAsync<PictureResponse>($"{PictureManagersApi}/PictureDescription/{Id}");
+        file.PictureObject = await Http.GetFromJsonAsync<PictureObjectResponse>($"{PictureManagersApi}/PicturePayload/picture/{Id}");
         return file;
     }
 }

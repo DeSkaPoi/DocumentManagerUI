@@ -11,7 +11,7 @@ namespace DocumentManagerUI.ModelResponse
         [Required]
         [StringLength(20, ErrorMessage = "Name is too long (>25).")]
         public string Title { get; set; }
-        public string Content { get; set; } 
+        public List<string> Content { get; set; } 
         public string Description { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime LastUpdate { get; set; }
@@ -19,5 +19,21 @@ namespace DocumentManagerUI.ModelResponse
         public List<FileLinkResponse> Files { get; set; } 
         public List<PictureLink> Pictures { get; set; } 
         public List<VideoLink> Videos { get; set; } 
+        
+        public Document() {
+            Content = new();
+        }
+        public Document(Document document) 
+        {
+            Id = document.Id;
+            Title = document.Title;
+            Content = document.Content;
+            Description = document.Description;
+            CreationTime = document.CreationTime;
+            LastUpdate = document.LastUpdate;
+            Files = document.Files;
+            Pictures = document.Pictures;
+            Videos = document.Videos;
+        }
     }
 }

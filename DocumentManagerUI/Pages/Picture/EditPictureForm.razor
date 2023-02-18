@@ -117,6 +117,8 @@
 
     [Parameter]
     public PictureResponse Picture { get; set; }
+    [Parameter]
+    public string PictureManagersApi { get; set; }
 
     public PictureObjectResponse fileTmp = new PictureObjectResponse();
     string size;
@@ -194,24 +196,11 @@
                             throw new Exception("Mutable object not found");
                         }
                     }
-                
-    /*size = ConvertingValueFromBytes(file.Size, 0);
-                using var fileContent = file.OpenReadStream(maxFileSize);
-                using var ms = new MemoryStream();
-                await fileContent.CopyToAsync(ms);
-
-           
-                fileTmp = new FileObjectResponse(file.Name, ms.ToArray(), file.Type);
-
-                if (File.FileObject == null)
-                {
-                    throw new Exception("Mutable object not found");
-                }*/
             }
         }
         catch (Exception ex)
         {
-            ShowModal(ex.Message); 
+            await ShowModal(ex.Message); 
         }
     }
 
@@ -224,15 +213,15 @@
 
             fileTmp = Picture.PictureObject;
 
-            var statusInfo2 = await Http.PutAsJsonAsync($"https://localhost:5003/api/PicturePayload/picture/{Picture.Id}", fileTmp);
+            var statusInfo2 = await Http.PutAsJsonAsync($"{PictureManagersApi}/PicturePayload/picture/{Picture.Id}", fileTmp);
             if (!statusInfo2.IsSuccessStatusCode)
             {
-                await Http.DeleteAsync($"https://localhost:5003/api/PictureDescription/{Picture.Id}");
+                await Http.DeleteAsync($"{PictureManagersApi}/PictureDescription/{Picture.Id}");
                 throw new Exception("Error - 500. Internal Server Error - Put");
             }
             param = 1;
             Picture.Size = size;
-            var statusInfo1 = await Http.PutAsJsonAsync($"https://localhost:5003/api/PictureDescription/{Picture.Id}", Picture);
+            var statusInfo1 = await Http.PutAsJsonAsync($"{PictureManagersApi}/PictureDescription/{Picture.Id}", Picture);
             if (!statusInfo1.IsSuccessStatusCode)
             {
                 throw new Exception("Error - 500. Internal Server Error - Put");

@@ -6,8 +6,9 @@
 @using System.Text.Json;
 @using Blazorise.RichTextEdit
 @using DocumentManagerUI.ModelResponse
+@inject IJSRuntime js
 
-<EditForm Model="@document" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@document" OnValidSubmit="@(HandleValidSubmit)">
     <DataAnnotationsValidator />
     <Microsoft.AspNetCore.Components.Forms.ValidationSummary/>
     <div class="col-10 Foorm">
@@ -25,7 +26,12 @@
                       EnterPressed="@HandleValidSubmit"
                       ContentChanged="@OnContentChanged"
                       ToolbarPosition="Placement.Top">
-            <Editor>@((MarkupString)document.Content)</Editor>
+            <Editor>
+                @foreach (var item in document?.Content)
+                {
+                    @((MarkupString)item)
+                }
+                </Editor>
             <Toolbar>
                 <RichTextEditToolbarGroup>
                     <RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
@@ -38,6 +44,9 @@
                     </RichTextEditToolbarSelect>
                     <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="ordered" />
                     <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="bullet" />
+                </RichTextEditToolbarGroup>
+                <RichTextEditToolbarGroup Float="Float.End">
+                    <Button Clicked="@OnCreateBlog"><Icon Name="IconName.FileAlt" /></Button>
                 </RichTextEditToolbarGroup>
                 <!-- Custom toolbar content -->
             </Toolbar>
@@ -87,13 +96,14 @@
     [Parameter]
     public string IdDocument { get; set; }
     [Parameter]
-    public string BaseURI { get; set; }
+    public string DocumentManagerApi { get; set; }
 
     public string tmp ="";
     public string ErrorMessage { get; set; }
     public Modal modalRef { get; set; }
-    private Document document = new();
-    MarkupString ms;
+    private Document document = new Document();
+
+    private List<string> blogsHtml = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,7 +112,7 @@
 
     private async Task GetDocumentAsync()
     {
-        string uri = string.Concat(BaseURI, IdDocument);
+        string uri = string.Concat($"{DocumentManagerApi}/Documents/", IdDocument);
         try
         {
             var response = await Http.GetAsync(uri);
@@ -116,7 +126,6 @@
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(payload);
                 throw new Exception(errorResponse.ErrorMessage);
             }
-            ms = new MarkupString(document.Content);
         }
         catch (Exception ex)
         {
@@ -139,35 +148,48 @@
     {
         try
         {
-            document.Content = await richTextEditRef.GetHtmlAsync();
+            var tmp = await richTextEditRef.GetTextAsync();
+            if (tmp.Contains("<img"))
+            {
+                tmp = await richTextEditRef.GetHtmlAsync();
+                tmp = tmp.Replace("&lt;", "<");
+                tmp = tmp.Replace("&gt;", ">");
+                await richTextEditRef.SetHtmlAsync(tmp);
+            }
 
-            document.Content = document.Content.Replace("&lt;", "<");
-            document.Content = document.Content.Replace("&gt;", ">");
-            await richTextEditRef.SetHtmlAsync(document.Content);
+
+            /*if (!document.Content.Contains(tmpStr))
+                {
+                document.Content.Add(tmp);
+
+                StateHasChanged();
+            }*/
         }
-        catch
+        catch { }
+    }
+
+    public async Task OnCreateBlog()
+    {
+        try
         {
-            
+            var selectedText = await js.InvokeAsync<string>("getSelectionHtml");
+            var startIndex = selectedText.IndexOf("<img");
+            var endIndex = selectedText.IndexOf('>', startIndex);
+            var tmpStr = selectedText.Substring(startIndex, endIndex - startIndex + 1);
+            var tmpStr2 = selectedText.Replace(tmpStr, "");
+            var blogs = $"<figure>{tmpStr}<figcaption><br>{tmpStr2}</figcaption></figure>";
+            document.Content.Add(blogs);
+        }
+        catch (Exception)
+        {
+
         }
 
     }
 
     private async Task HandleValidSubmit()
     {
-        document.Content = await richTextEditRef.GetHtmlAsync();
-
-        document.Content = document.Content.Replace("&lt;", "<");
-        document.Content = document.Content.Replace("&gt;", ">");
-
-        var startIndex = document.Content.IndexOf("<img");
-        var endIndex = document.Content.IndexOf('>', startIndex);
-
-        var tmpStr = document.Content.Substring(startIndex, endIndex - startIndex+1);
-        var tmpStr2 = document.Content.Replace(tmpStr, "");
-
-        document.Content = $"<figure>{tmpStr}<figcaption>{tmpStr2}</figcaption></figure>";
-
-        string uri = string.Concat(BaseURI, IdDocument);
+        string uri = string.Concat($"{DocumentManagerApi}/Documents/", IdDocument);
         try
         {
             document.LastUpdate = DateTime.Now;

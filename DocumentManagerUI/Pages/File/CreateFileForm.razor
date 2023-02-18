@@ -108,7 +108,10 @@
 
     [Parameter]
     public string IdDocument { get; set; }
-
+    [Parameter]
+    public string DocumentManagerApi { get; set; }
+    [Parameter]
+    public string FileManagersApi { get; set; }
     [Parameter]
     public FileResponse File { get; set; }
     
@@ -201,7 +204,7 @@
                 throw new Exception("Error - 500. Internal Server Error - Post");
             }
 
-            var response2 = await Http.PostAsJsonAsync($"https://localhost:5001/api/DocumentFiles/{IdDocument}/{idfile}", new object());
+            var response2 = await Http.PostAsJsonAsync($"{DocumentManagerApi}/DocumentFiles/{IdDocument}/{idfile}", new object());
             if (!response2.IsSuccessStatusCode)
             {
                 throw new Exception("Error - 500. Internal Server Error - Post");

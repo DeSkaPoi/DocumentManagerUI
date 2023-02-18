@@ -6,12 +6,14 @@
 
 
 <div class="main">
-    <DocumantKepper IdDocument="@IdDocument" BaseUri="@BaseUri" />
+    <DocumantKepper IdDocument="@IdDocument" DocumentManagerApi="@DocumentManagerApi" FileManagerApi="@FileManagerApi" PictureManagerApi="@PictureManagerApi" VideoManagerApi="" />
 </div>
 
 
 @code{
 
-    public string IdDocument { get; set; } = "4b2aec78-7156-4fe1-f298-08db0d3e9f00";
-    public string BaseUri { get; set; } = "https://localhost:5001/api/Documents/";
+    public string IdDocument { get; set; } = "da5eb3bb-a21b-48ac-1142-08db11f8354f";
+    public string DocumentManagerApi { get; set; } = "https://localhost:5001/api";
+    public string FileManagerApi { get; set; } = "https://localhost:5001/api";
+    public string PictureManagerApi { get; set; } = "https://localhost:5003/api";
 }

@@ -1,16 +1,18 @@
 ﻿
 <TabControl>
     <TabPage Text="Documents">
-        <Documents IdDocument="@IdDocument" BaseUri="@BaseUri" />
+        <Documents IdDocument="@IdDocument" DocumentManagerApi="@DocumentManagerApi" />
     </TabPage>
-    <TabPage Text="Pictures">
-        <Picture IdDocument="@IdDocument"></Picture>
-    </TabPage>
-    <TabPage Text="Videos">
 
+    <TabPage Text="Pictures">
+        <Picture IdDocument="@IdDocument" DocumentManagerApi="@DocumentManagerApi" PictureManagersApi="@PictureManagerApi"></Picture>
     </TabPage>
+
+    <TabPage Text="Videos">
+    </TabPage>
+
     <TabPage Text="Files" >
-        <Files IdDocument="@IdDocument"></Files>
+        <Files IdDocument="@IdDocument" DocumentManagerApi="@DocumentManagerApi" FileManagersApi="@FileManagerApi"></Files>
     </TabPage>
 </TabControl>
 
@@ -19,5 +21,11 @@
     [Parameter]
     public string IdDocument { get; set; }
     [Parameter]
-    public string BaseUri { get; set; }
+    public string DocumentManagerApi { get; set; }
+    [Parameter]
+    public string FileManagerApi { get; set; }
+    [Parameter]
+    public string PictureManagerApi { get; set; }
+    [Parameter]
+    public string VideoManagerApi { get; set; }
 }

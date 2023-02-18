@@ -105,6 +105,10 @@
 
     [Parameter]
     public PictureResponse Picture { get; set; }
+    [Parameter]
+    public string DocumentManagerApi { get; set; }
+    [Parameter]
+    public string PictureManagersApi { get; set; }
     
     public Modal modalRef { get; set; }
 
@@ -117,8 +121,6 @@
         Mb,
         Gb
     }
-
-  
 
     private Task HideModal()
     {
@@ -135,8 +137,6 @@
     {
         try
         {
-            long maxFileSize = 1024 * 1024 * 100;
-
             foreach (var file in e.GetMultipleFiles(1))
             {
                 using (var stream = new MemoryStream())
@@ -153,15 +153,6 @@
                         throw new Exception("Mutable object not found");
                     }
                 }
-                
-
-                
-                /*using var fileContent = file.OpenReadStream(maxFileSize);
-                using var ms = new MemoryStream();
-                await fileContent.CopyToAsync(ms);*/
-
-           
-                
             }
         }
         catch (Exception ex)
@@ -178,7 +169,7 @@
         {
             Picture.CreationTime = DateTime.Now;
             Picture.LastUpDate = DateTime.Now;
-            var response = await Http.PostAsJsonAsync($"https://localhost:5003/api/PictureDescription/", Picture);
+            var response = await Http.PostAsJsonAsync($"{PictureManagersApi}/PictureDescription/", Picture);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -187,14 +178,14 @@
 
             var idfile = await response.Content.ReadAsStringAsync();
             idfile = idfile.Trim('"');
-            var statusInfo = await Http.PostAsJsonAsync($"https://localhost:5003/api/PicturePayload/picture/{idfile}", Picture.PictureObject);
+            var statusInfo = await Http.PostAsJsonAsync($"{PictureManagersApi}/PicturePayload/picture/{idfile}", Picture.PictureObject);
             if (!statusInfo.IsSuccessStatusCode)
             {
-                await Http.DeleteAsync($"https://localhost:5003/api/FileDescription/{idfile}");
+                await Http.DeleteAsync($"{PictureManagersApi}/FileDescription/{idfile}");
                 throw new Exception("Error - 500. Internal Server Error - Post");
             }
 
-            var response2 = await Http.PostAsJsonAsync($"https://localhost:5001/api/DocumentPictures/{IdDocument}/{idfile}", new object());
+            var response2 = await Http.PostAsJsonAsync($"{DocumentManagerApi}/DocumentPictures/{IdDocument}/{idfile}", new object());
             if (!response2.IsSuccessStatusCode)
             {
                 throw new Exception("Error - 500. Internal Server Error - Post");
@@ -203,7 +194,7 @@
         }
         catch (Exception e)
         {
-            ShowModal(e.Message + "wwww");
+            await ShowModal(e.Message + "wwww");
         }
         await Task.Delay(1000);
         isLoading = false;
