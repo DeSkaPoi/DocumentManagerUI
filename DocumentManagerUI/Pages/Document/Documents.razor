@@ -148,7 +148,7 @@
     {
         try
         {
-            var tmp = await richTextEditRef.GetTextAsync();
+            tmp = await richTextEditRef.GetTextAsync();
             if (tmp.Contains("<img"))
             {
                 tmp = await richTextEditRef.GetHtmlAsync();
@@ -156,14 +156,6 @@
                 tmp = tmp.Replace("&gt;", ">");
                 await richTextEditRef.SetHtmlAsync(tmp);
             }
-
-
-            /*if (!document.Content.Contains(tmpStr))
-                {
-                document.Content.Add(tmp);
-
-                StateHasChanged();
-            }*/
         }
         catch { }
     }
@@ -177,7 +169,7 @@
             var endIndex = selectedText.IndexOf('>', startIndex);
             var tmpStr = selectedText.Substring(startIndex, endIndex - startIndex + 1);
             var tmpStr2 = selectedText.Replace(tmpStr, "");
-            var blogs = $"<figure>{tmpStr}<figcaption><br>{tmpStr2}</figcaption></figure>";
+            var blogs = $"<br><figure>{tmpStr}<figcaption><br>{tmpStr2}</figcaption></figure>";
             document.Content.Add(blogs);
         }
         catch (Exception)
@@ -189,10 +181,44 @@
 
     private async Task HandleValidSubmit()
     {
+        tmp = await richTextEditRef.GetHtmlAsync();
+        var tmp1 = await richTextEditRef.GetTextAsync();
+        tmp1 = tmp1.Replace("\n", "");
+
+        //tmp1 = tmp1.Replace("/n", "");
+        tmp = tmp.Replace("&lt;", "<");
+        tmp = tmp.Replace("&gt;", ">");
+        document.Content = new();
+        try
+        {
+            while (!string.IsNullOrEmpty(tmp))
+            {
+                //break;
+                var startIndex = tmp.IndexOf("<img");
+                var endIndex = tmp.IndexOf("\">", startIndex) + 2;
+
+                var startIndex1 = tmp.IndexOf("<p>", endIndex);
+                var endIndex1 = tmp.IndexOf("</p>", startIndex1) + 4;
+
+                if (startIndex <= 0 || endIndex <= 0)
+                {
+                    document.Content.Add(tmp);
+                    break;
+                }
+
+                var tmpStr = "<br>" + tmp.Substring(startIndex, endIndex - startIndex) + "<br>" + tmp.Substring(startIndex1, endIndex1 - startIndex1);
+                document.Content.Add(tmpStr);
+                tmpStr = tmp.Substring(startIndex, endIndex - startIndex + tmp1.Length);
+                tmp = tmp.Replace(tmpStr, "");
+            }
+        }
+        catch { }
+
         string uri = string.Concat($"{DocumentManagerApi}/Documents/", IdDocument);
         try
         {
             document.LastUpdate = DateTime.Now;
+            //document.Content = new();
             var response = await Http.PutAsJsonAsync(uri, document);
             if (response.IsSuccessStatusCode)
             {
